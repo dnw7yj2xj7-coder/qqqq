@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AZS Case Simulator</title>
 <style>
+/* === STYLES (UNCHANGED VISUALLY) === */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--bg:#06060a;--surface:#111118;--surface-2:#1a1a24;--text:#fff;--text-dim:#555568;--gold:#ffd700;--green:#00e070;--orange:#ff6b00;--purple:#a855f7;--blue:#3b82f6;--gray:#6b7280;--red:#ef4444;--panel-w:170px}
 body,html{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif}
@@ -115,7 +116,466 @@ header{width:100%;display:flex;justify-content:space-between;align-items:center;
 <div class="modal-overlay" id="pinModal"><div class="modal"><h3>🔐 Admin Access</h3><p>Введите PIN для доступа</p><input type="password" class="pin-in" id="pinIn" maxlength="4" placeholder="••••" inputmode="numeric"><div class="m-btns"><button class="m-btn m-cancel" id="btnPinCancel">Отмена</button><button class="m-btn m-confirm" id="btnPinConfirm">Войти</button></div><div class="err" id="pinErr">Неверный PIN</div></div></div>
 <div class="admin-panel" id="admPanel"><div class="adm-head"><h3>⚙️ Admin Panel</h3><button class="adm-close" id="admClose">✕</button></div><div class="adm-content" id="admContent"></div></div>
 <script>
-const R={common:{n:'Common',c:'#6b7280'},uncommon:{n:'Uncommon',c:'#06b6d4'},rare:{n:'Rare',c:'#3b82f6'},epic:{n:'Epic',c:'#a855f7'},legendary:{n:'Legendary',c:'#ffd700'},dayx:{n:'Событие',c:'#f97316'}};const I={sweet:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 38V56"/><path d="M20 38C20 26 26 22 32 22C38 22 44 26 44 38"/><circle cx="32" cy="22" r="10"/><path d="M24 18L28 22"/><path d="M40 18L36 22"/></svg>`,wipes:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="12" y="14" width="40" height="36" rx="4"/><path d="M12 26H52"/><path d="M32 26V50"/><path d="M20 14V10C20 6 24 2 32 2C40 2 44 6 44 10V14"/></svg>`,coffee:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 20H44V44C44 50 40 54 34 54H26C20 54 16 50 16 44V20Z"/><path d="M44 28H48C52 28 54 32 54 36C54 40 52 44 48 44H44"/><path d="M24 12V16"/><path d="M32 12V16"/><path d="M40 12V16"/></svg>`,fuel1:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">1L</text></svg>`,fuel2:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">2L</text></svg>`,fuel3:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">3L</text></svg>`,cash:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="14" width="48" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M24 32H40"/><path d="M32 24V40"/></svg>`,cash5:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="14" width="52" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M22 32H42"/><path d="M32 22V42"/></svg>`,dayx:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="26"/><path d="M32 16V32L42 38"/></svg>`};const DEFAULTS=[{id:1,n:'Сладкий Бонус',i:'sweet',r:'common',ch:15},{id:2,n:'Салфетки',i:'wipes',r:'common',ch:9},{id:3,n:'Кофе Американо',i:'coffee',r:'uncommon',ch:8},{id:4,n:'100 ₽',i:'cash',r:'rare',ch:7.8},{id:5,n:'1л Бензина',i:'fuel1',r:'rare',ch:4},{id:6,n:'2л Бензина',i:'fuel2',r:'epic',ch:-1},{id:7,n:'3000 ₽',i:'cash',r:'legendary',ch:0},{id:8,n:'5000 ₽',i:'cash5',r:'legendary',ch:0},{id:9,n:'День X',i:'dayx',r:'dayx',ch:51}];let prizes=JSON.parse(JSON.stringify(DEFAULTS)),hist=[],opens=0,phase='idle',wheelSpinning=false,adminOpen=false,activeTimeouts=[],CW=140,VIS=65,WIN=56,SPIN_MS=9000;function gameTimeout(fn,ms){const id=setTimeout(()=>{activeTimeouts=activeTimeouts.filter(t=>t!==id);fn();},ms);activeTimeouts.push(id);return id}function sleep(ms){return new Promise(resolve=>gameTimeout(resolve,ms))}function clearGameTimeouts(){activeTimeouts.forEach(clearTimeout);activeTimeouts=[]}function nukeResultOverlay(){const res=document.getElementById('resArea');res.classList.remove('active');res.replaceChildren()}function restoreResultOverlay(){const res=document.getElementById('resArea');if(res.children.length===0){res.innerHTML=`<div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div>`}res.classList.remove('active')}function init(){buildWheel();renderPrizePanel();renderHist();setupKeyboard();setupDevUI()}function renderPrizePanel(){const el=document.getElementById('prizePanel');let h='<div class="prize-panel-title">Лоты кейса</div>';prizes.forEach(p=>{const c=R[p.r].c;h+=`<div class="prize-row" style="--rc:${c}"><div class="prize-row-icon">${I[p.i]}</div><div><div class="prize-row-name">${p.n}</div><div class="prize-row-sub">${R[p.r].n}</div></div></div>`});el.innerHTML=h}function getWinner(){const pool=prizes.filter(p=>p.ch>0),total=pool.reduce((s,p)=>s+p.ch,0);let r=Math.random()*total;for(const p of pool){r-=p.ch;if(r<=0)return p}return pool[pool.length-1]}function setupKeyboard(){document.addEventListener('keydown',(e)=>{const key=e.key.toLowerCase();if(key==='f'){e.preventDefault();openDevModal();return}if(key==='enter'){if(adminOpen)return;if(document.activeElement?.tagName==='INPUT')return;e.preventDefault();switch(phase){case'idle':startSpin();break;case'showing_result':closeResult();break;case'wheel_active':if(!wheelSpinning){wheelSpinning=true;spinWheel()}break;case'showing_wheel_result':closeWheelResult();break}}})}async function startSpin(){if(adminOpen)return;phase='spinning';document.getElementById('caseWrap').classList.remove('hidden');document.getElementById('rouletteWrap').classList.remove('active');document.getElementById('wheelWrap').classList.remove('active');nukeResultOverlay();const strip=document.getElementById('strip');strip.style.transition='none';strip.style.transform='translateX(0)';strip.innerHTML='';const wSvg=document.getElementById('wheelSvg');wSvg.style.transition='none';wSvg.style.transform='rotate(0deg)';document.getElementById('wheelRes').textContent='Нажмите Enter';document.getElementById('wheelRes').className='wheel-result';await sleep(200);document.getElementById('caseBox').classList.add('vibrating');await sleep(350);document.getElementById('caseBox').classList.remove('vibrating');document.getElementById('caseWrap').classList.add('hidden');document.getElementById('rouletteWrap').classList.add('active');await sleep(400);const win=getWinner();buildStrip(win);await spinRoulette();await sleep(300);if(win.n==='День X'){document.getElementById('rouletteWrap').classList.remove('active');await sleep(300);await runDayX()}else{showResult(win);addHist(win);phase='showing_result'}}function buildStrip(win){const strip=document.getElementById('strip');let h='';for(let i=0;i<VIS;i++){const p=i===WIN?win:prizes[Math.floor(Math.random()*prizes.length)],c=R[p.r].c,leg=p.r==='legendary'?' legendary':'',dx=p.r==='dayx'?' dayx-card':'';h+=`<div class="card${leg}${dx}" style="--rc:${c}"><div class="card-icon">${I[p.i]}</div><div class="card-name">${p.n}</div><div class="card-rarity">${R[p.r].n}</div></div>`}strip.innerHTML=h}function spinRoulette(){return new Promise(res=>{const strip=document.getElementById('strip'),vp=document.querySelector('.roulette-viewport');strip.style.transition='none';strip.style.transform='translateX(0)';void strip.offsetWidth;const t=-((WIN*CW)+(CW/2)-(vp.clientWidth/2)+((Math.random()*40)-20));requestAnimationFrame(()=>{strip.style.transition=`transform ${SPIN_MS}ms cubic-bezier(0.2,0.8,0.15,1)`;strip.style.transform=`translateX(${t}px)`});let done=false;const fin=()=>{if(done)return;done=true;strip.removeEventListener('transitionend',onE);clearTimeout(activeTimeouts.find(id=>true)||0);res()};const onE=e=>{if(e.propertyName==='transform')fin()};const fb=gameTimeout(fin,SPIN_MS+500);strip.addEventListener('transitionend',onE)})}function showResult(p){if(adminOpen)return;const c=R[p.r].c;document.getElementById('resIcon').innerHTML=I[p.i];document.getElementById('resIcon').style.color=c;document.getElementById('resCard').style.setProperty('--rc',c);document.getElementById('resName').textContent=p.n;const b=document.getElementById('resBadge');b.textContent=R[p.r].n;b.style.color=c;b.style.borderColor=c;document.getElementById('resArea').classList.add('active');if(p.r==='legendary')spawnConfetti()}function closeResult(){if(adminOpen)return;nukeResultOverlay();document.getElementById('rouletteWrap').classList.remove('active');const strip=document.getElementById('strip');strip.style.transition='none';strip.style.transform='translateX(0)';strip.innerHTML='';document.getElementById('caseWrap').classList.remove('hidden');phase='idle'}function buildWheel(){const svg=document.getElementById('wheelSvg'),cx=150,cy=150,r=130,n=31,sa=360/n;let h='';for(let i=0;i<n;i++){const a1=(i*sa-90)*Math.PI/180,a2=((i+1)*sa-90)*Math.PI/180;h+=`<path d="M${cx},${cy} L${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)} A${r},${r} 0 0,1 ${cx+r*Math.cos(a2)},${cy+r*Math.sin(a2)} Z" fill="${i%2?'#1a1a28':'#222235'}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;const ma=((i+0.5)*sa-90)*Math.PI/180,nr=r*0.78;h+=`<text x="${cx+nr*Math.cos(ma)}" y="${cy+nr*Math.sin(ma)}" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(${(i+0.5)*sa},${cx+nr*Math.cos(ma)},${cy+nr*Math.sin(ma)})">${i+1}</text>`}h+=`<circle cx="${cx}" cy="${cy}" r="24" fill="#111118" stroke="#ffd700" stroke-width="2"/><text x="${cx}" y="${cy}" fill="#ffd700" font-size="16" text-anchor="middle" dominant-baseline="central">🎯</text>`;svg.innerHTML=h}async function runDayX(){if(adminOpen)return;phase='wheel_active';wheelSpinning=false;document.getElementById('wheelWrap').classList.add('active');document.getElementById('wheelRes').textContent='Нажмите Enter';document.getElementById('wheelRes').className='wheel-result'}async function spinWheel(){if(adminOpen)return;const svg=document.getElementById('wheelSvg'),resEl=document.getElementById('wheelRes');resEl.textContent='Крутим...';resEl.className='wheel-result';const num=Math.floor(Math.random()*31)+1,today=new Date().getDate(),sa=360/31,target=-((num-0.5)*sa),spins=6+Math.floor(Math.random()*3),deg=spins*360+target+((Math.random()-0.5)*(sa*0.4));svg.style.transition='transform 9s cubic-bezier(0.2,0.8,0.15,1)';svg.style.transform=`rotate(${deg}deg)`;await sleep(9300);resEl.textContent=`Выпало: ${num}`;if(num===today){resEl.textContent=`🎉 ДЕНЬ X! ${num} → Бонус 3л бензина!`;resEl.className='wheel-result win';spawnConfetti();addHist({n:'3л Бензина (День X)',i:'fuel3',r:'legendary'})}else{resEl.textContent=`Число ${num}. Сегодня ${today}. Не совпало.`}phase='showing_wheel_result'}function closeWheelResult(){if(adminOpen)return;document.getElementById('wheelWrap').classList.remove('active');const svg=document.getElementById('wheelSvg');svg.style.transition='none';svg.style.transform='rotate(0deg)';document.getElementById('wheelRes').textContent='Нажмите Enter';document.getElementById('wheelRes').className='wheel-result';document.getElementById('rouletteWrap').classList.remove('active');const strip=document.getElementById('strip');strip.style.transition='none';strip.style.transform='translateX(0)';strip.innerHTML='';document.getElementById('caseWrap').classList.remove('hidden');phase='idle'}function addHist(p){if(adminOpen)return;opens++;hist.unshift({n:p.n,i:p.i,r:p.r,t:new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})});if(hist.length>6)hist.pop();renderHist()}function renderHist(){document.getElementById('histList').innerHTML=hist.map(h=>{const c=R[h.r].c;return`<div class="h-item" style="--rc:${c}"><div class="h-icon">${I[h.i]}</div><div class="h-name">${h.n}</div><div class="h-time">${h.t}</div></div>`}).join('')}function spawnConfetti(){const cols=['#ffd700','#ff4500','#fff','#00e070','#a855f7','#3b82f6'];for(let i=0;i<18;i++){const c=document.createElement('div');c.className='confetti-piece';c.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cols[i%6]};animation-duration:${1.5+Math.random()}s;width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;`;document.body.appendChild(c);setTimeout(()=>c.remove(),3000)}}function openDevModal(){adminOpen=true;clearGameTimeouts();nukeResultOverlay();phase='idle';wheelSpinning=false;const m=document.getElementById('pinModal');m.classList.add('active');document.getElementById('pinIn').value='';document.getElementById('pinErr').classList.remove('show');setTimeout(()=>document.getElementById('pinIn').focus(),50)}function setupDevUI(){document.getElementById('btnPinCancel').addEventListener('click',closeAdminUI);document.getElementById('btnPinConfirm').addEventListener('click',()=>{if(document.getElementById('pinIn').value==='2468'){document.getElementById('pinModal').classList.remove('active');renderAdm();document.getElementById('admPanel').classList.add('open')}else{document.getElementById('pinErr').classList.add('show');document.getElementById('pinIn').value=''}});document.getElementById('pinIn').addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('btnPinConfirm').click()}});document.getElementById('admClose').addEventListener('click',closeAdminUI)}function closeAdminUI(){adminOpen=false;document.getElementById('pinModal').classList.remove('active');document.getElementById('admPanel').classList.remove('open');restoreResultOverlay()}function renderAdm(){const wt=prizes.filter(p=>p.ch>0).reduce((s,p)=>s+p.ch,0);let h=`<div style="margin-bottom:8px;font-size:9px;color:var(--text-dim);"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Открытий:</span><span style="color:var(--gold)">${opens}</span></div><div style="display:flex;justify-content:space-between;"><span>Рабочий вес:</span><span style="color:var(--green)">${wt}</span></div></div>`;h+=prizes.map((p,i)=>{const c=R[p.r].c,pct=p.ch>0?((p.ch/wt)*100).toFixed(1):'0',st=p.ch===0?'(визуал)':p.ch<0?'(✕)':`${pct}%`;return`<div class="adm-row" style="--rc:${c}"><div style="width:14px;height:14px;color:${c}">${I[p.i]}</div><div style="flex:1;"><div style="font-size:9px;font-weight:600;">${p.n}</div><div class="adm-label">Вес: ${p.ch} → ${st}</div></div><input type="number" value="${p.ch}" step="0.1" onchange="prizes[${i}].ch=parseFloat(this.value)||0;renderAdm()"></div>`}).join('');document.getElementById('admContent').innerHTML=h}init();
+/* === STABLE ENGINE === */
+const R = { common:{n:'Common',c:'#6b7280'}, uncommon:{n:'Uncommon',c:'#06b6d4'}, rare:{n:'Rare',c:'#3b82f6'}, epic:{n:'Epic',c:'#a855f7'}, legendary:{n:'Legendary',c:'#ffd700'}, dayx:{n:'Событие',c:'#f97316'} };
+const I = {
+  sweet:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 38V56"/><path d="M20 38C20 26 26 22 32 22C38 22 44 26 44 38"/><circle cx="32" cy="22" r="10"/><path d="M24 18L28 22"/><path d="M40 18L36 22"/></svg>`,
+  wipes:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="12" y="14" width="40" height="36" rx="4"/><path d="M12 26H52"/><path d="M32 26V50"/><path d="M20 14V10C20 6 24 2 32 2C40 2 44 6 44 10V14"/></svg>`,
+  coffee:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 20H44V44C44 50 40 54 34 54H26C20 54 16 50 16 44V20Z"/><path d="M44 28H48C52 28 54 32 54 36C54 40 52 44 48 44H44"/><path d="M24 12V16"/><path d="M32 12V16"/><path d="M40 12V16"/></svg>`,
+  fuel1:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">1L</text></svg>`,
+  fuel2:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">2L</text></svg>`,
+  fuel3:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">3L</text></svg>`,
+  cash:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="14" width="48" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M24 32H40"/><path d="M32 24V40"/></svg>`,
+  cash5:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="14" width="52" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M22 32H42"/><path d="M32 22V42"/></svg>`,
+  dayx:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="26"/><path d="M32 16V32L42 38"/></svg>`
+};
+
+const DEFAULTS = [
+  {id:1, n:'Сладкий Бонус',  i:'sweet',  r:'common',    ch:15},
+  {id:2, n:'Салфетки',       i:'wipes',  r:'common',    ch:9},
+  {id:3, n:'Кофе Американо', i:'coffee', r:'uncommon',  ch:8},
+  {id:4, n:'100 ₽',          i:'cash',   r:'rare',      ch:7.8},
+  {id:5, n:'1л Бензина',     i:'fuel1',  r:'rare',      ch:4},
+  {id:6, n:'2л Бензина',     i:'fuel2',  r:'epic',      ch:-1},
+  {id:7, n:'3000 ₽',         i:'cash',   r:'legendary', ch:0},
+  {id:8, n:'5000 ₽',         i:'cash5',  r:'legendary', ch:0},
+  {id:9, n:'День X',         i:'dayx',   r:'dayx',      ch:51}
+];
+
+// === CENTRALIZED STATE ===
+let gameState = {
+  prizes: JSON.parse(JSON.stringify(DEFAULTS)),
+  hist: [],
+  opens: 0,
+  phase: 'idle', // idle, spinning, showing_result, wheel_active, showing_wheel_result
+  wheelSpinning: false,
+  adminOpen: false,
+  timeouts: []
+};
+
+const CW = 140, VIS = 65, WIN = 56, SPIN_MS = 9000;
+
+// === SAFE TIMER SYSTEM ===
+function safeTimeout(fn, ms) {
+  const id = setTimeout(fn, ms);
+  gameState.timeouts.push(id);
+  return id;
+}
+
+function clearAllTimers() {
+  gameState.timeouts.forEach(clearTimeout);
+  gameState.timeouts = [];
+}
+
+function sleep(ms) { return new Promise(resolve => safeTimeout(resolve, ms)); }
+
+// === HARD RESET ===
+function resetGame() {
+  clearAllTimers();
+  gameState.phase = 'idle';
+  gameState.wheelSpinning = false;
+  gameState.adminOpen = false;
+
+  // UI Reset
+  document.getElementById('pinModal').classList.remove('active');
+  document.getElementById('admPanel').classList.remove('open');
+  document.getElementById('resArea').classList.remove('active');
+  document.getElementById('rouletteWrap').classList.remove('active');
+  document.getElementById('wheelWrap').classList.remove('active');
+  document.getElementById('caseWrap').classList.remove('hidden');
+  document.getElementById('caseBox').classList.remove('vibrating');
+  
+  // Ensure inputs are clear
+  const pinIn = document.getElementById('pinIn');
+  if(pinIn) pinIn.value = '';
+  document.getElementById('pinErr').classList.remove('show');
+
+  // Ensure Result DOM is clean
+  const resArea = document.getElementById('resArea');
+  resArea.innerHTML = `<div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div>`;
+}
+
+// === INITIALIZATION ===
+function init() {
+  buildWheel();
+  renderPrizePanel();
+  renderHist();
+  setupKeyboard();
+  setupDevUI();
+}
+
+function renderPrizePanel() {
+  const el = document.getElementById('prizePanel');
+  let h = '<div class="prize-panel-title">Лоты кейса</div>';
+  gameState.prizes.forEach(p => { 
+    const c = R[p.r].c; 
+    h += `<div class="prize-row" style="--rc:${c}"><div class="prize-row-icon">${I[p.i]}</div><div><div class="prize-row-name">${p.n}</div><div class="prize-row-sub">${R[p.r].n}</div></div></div>`; 
+  });
+  el.innerHTML = h;
+}
+
+function getWinner() {
+  const pool = gameState.prizes.filter(p => p.ch > 0);
+  const total = pool.reduce((s, p) => s + p.ch, 0);
+  let r = Math.random() * total;
+  for (const p of pool) { r -= p.ch; if (r <= 0) return p; }
+  return pool[pool.length - 1];
+}
+
+// === KEYBOARD HANDLER ===
+function setupKeyboard() {
+  // Remove old listener if any (to prevent duplicates if init runs twice)
+  document.removeEventListener('keydown', handleGlobalKey);
+  document.addEventListener('keydown', handleGlobalKey);
+}
+
+function handleGlobalKey(e) {
+  const key = e.key.toLowerCase();
+  
+  // F for Admin
+  if (key === 'f') { 
+    e.preventDefault(); 
+    openDevModal(); 
+    return; 
+  }
+  
+  // Enter for Game
+  if (key === 'enter') {
+    // Do not trigger if typing in inputs
+    if (document.activeElement?.tagName === 'INPUT') return;
+    // Do not trigger if admin is open
+    if (gameState.adminOpen) return;
+
+    e.preventDefault();
+    try {
+      switch (gameState.phase) {
+        case 'idle': startSpin(); break;
+        case 'showing_result': closeResult(); break;
+        case 'wheel_active': 
+          if (!gameState.wheelSpinning) { 
+            gameState.wheelSpinning = true; 
+            spinWheel(); 
+          } 
+          break;
+        case 'showing_wheel_result': closeWheelResult(); break;
+      }
+    } catch (err) {
+      console.error("Action error:", err);
+      resetGame();
+    }
+  }
+}
+
+// === GAME FLOW ===
+async function startSpin() {
+  // Safety check
+  if (gameState.phase !== 'idle') return;
+  
+  try {
+    gameState.phase = 'spinning';
+    
+    // Clean slate
+    document.getElementById('caseWrap').classList.remove('hidden');
+    document.getElementById('rouletteWrap').classList.remove('active');
+    document.getElementById('wheelWrap').classList.remove('active');
+    document.getElementById('resArea').classList.remove('active');
+    
+    const strip = document.getElementById('strip');
+    strip.style.transition = 'none'; 
+    strip.style.transform = 'translateX(0)'; 
+    strip.innerHTML = '';
+    
+    const wSvg = document.getElementById('wheelSvg');
+    wSvg.style.transition = 'none'; 
+    wSvg.style.transform = 'rotate(0deg)';
+    document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
+    document.getElementById('wheelRes').className = 'wheel-result';
+    
+    await sleep(200);
+    
+    document.getElementById('caseBox').classList.add('vibrating');
+    await sleep(350);
+    document.getElementById('caseBox').classList.remove('vibrating');
+    
+    document.getElementById('caseWrap').classList.add('hidden');
+    document.getElementById('rouletteWrap').classList.add('active');
+    await sleep(400);
+    
+    const win = getWinner();
+    buildStrip(win);
+    await spinRoulette();
+    await sleep(300);
+    
+    if (win.n === 'День X') {
+      document.getElementById('rouletteWrap').classList.remove('active');
+      await sleep(300);
+      await runDayX();
+    } else {
+      showResult(win); 
+      addHist(win); 
+      gameState.phase = 'showing_result';
+    }
+  } catch (err) {
+    console.error("Spin Error:", err);
+    resetGame();
+  }
+}
+
+function buildStrip(win) {
+  const strip = document.getElementById('strip');
+  let h = '';
+  for (let i = 0; i < VIS; i++) {
+    const p = (i === WIN) ? win : gameState.prizes[Math.floor(Math.random() * gameState.prizes.length)];
+    const c = R[p.r].c;
+    const leg = p.r === 'legendary' ? ' legendary' : '';
+    const dx = p.r === 'dayx' ? ' dayx-card' : '';
+    h += `<div class="card${leg}${dx}" style="--rc:${c}"><div class="card-icon">${I[p.i]}</div><div class="card-name">${p.n}</div><div class="card-rarity">${R[p.r].n}</div></div>`;
+  }
+  strip.innerHTML = h;
+}
+
+function spinRoulette() {
+  return new Promise(res => {
+    const strip = document.getElementById('strip');
+    const vp = document.querySelector('.roulette-viewport');
+    
+    strip.style.transition = 'none'; 
+    strip.style.transform = 'translateX(0)'; 
+    void strip.offsetWidth;
+    
+    const t = -((WIN * CW) + (CW / 2) - (vp.clientWidth / 2) + ((Math.random() * 40) - 20));
+    
+    requestAnimationFrame(() => {
+      strip.style.transition = `transform ${SPIN_MS}ms cubic-bezier(0.2, 0.8, 0.15, 1)`;
+      strip.style.transform = `translateX(${t}px)`;
+    });
+    
+    let done = false;
+    const fin = () => { 
+      if (done) return; 
+      done = true; 
+      strip.removeEventListener('transitionend', onE); 
+      // Don't clear all timeouts here, just this one if we could, but let's just resolve
+      res(); 
+    };
+    const onE = e => { if (e.propertyName === 'transform') fin(); };
+    const fb = safeTimeout(fin, SPIN_MS + 500);
+    strip.addEventListener('transitionend', onE);
+  });
+}
+
+function showResult(p) {
+  if (gameState.adminOpen) return;
+  
+  const c = R[p.r].c;
+  const iconEl = document.getElementById('resIcon');
+  const nameEl = document.getElementById('resName');
+  const badgeEl = document.getElementById('resBadge');
+  
+  if (iconEl) iconEl.innerHTML = I[p.i];
+  if (iconEl) iconEl.style.color = c;
+  
+  const cardEl = document.getElementById('resCard');
+  if(cardEl) cardEl.style.setProperty('--rc', c);
+  
+  if (nameEl) nameEl.textContent = p.n;
+  if (badgeEl) {
+    badgeEl.textContent = R[p.r].n; 
+    badgeEl.style.color = c; 
+    badgeEl.style.borderColor = c;
+  }
+  
+  document.getElementById('resArea').classList.add('active');
+  if (p.r === 'legendary') spawnConfetti();
+}
+
+function closeResult() {
+  if (gameState.adminOpen) return;
+  
+  document.getElementById('resArea').classList.remove('active');
+  document.getElementById('rouletteWrap').classList.remove('active');
+  
+  const strip = document.getElementById('strip'); 
+  strip.style.transition = 'none'; 
+  strip.style.transform = 'translateX(0)'; 
+  strip.innerHTML = '';
+  
+  document.getElementById('caseWrap').classList.remove('hidden'); 
+  gameState.phase = 'idle';
+}
+
+// === WHEEL LOGIC ===
+function buildWheel() {
+  const svg = document.getElementById('wheelSvg');
+  if (!svg) return;
+  const cx = 150, cy = 150, r = 130, n = 31, sa = 360 / n;
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const a1 = (i * sa - 90) * Math.PI / 180, a2 = ((i + 1) * sa - 90) * Math.PI / 180;
+    h += `<path d="M${cx},${cy} L${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)} A${r},${r} 0 0,1 ${cx+r*Math.cos(a2)},${cy+r*Math.sin(a2)} Z" fill="${i%2?'#1a1a28':'#222235'}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
+    const ma = ((i + 0.5) * sa - 90) * Math.PI / 180, nr = r * 0.78;
+    h += `<text x="${cx+nr*Math.cos(ma)}" y="${cy+nr*Math.sin(ma)}" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(${(i+0.5)*sa},${cx+nr*Math.cos(ma)},${cy+nr*Math.sin(ma)})">${i+1}</text>`;
+  }
+  h += `<circle cx="${cx}" cy="${cy}" r="24" fill="#111118" stroke="#ffd700" stroke-width="2"/><text x="${cx}" y="${cy}" fill="#ffd700" font-size="16" text-anchor="middle" dominant-baseline="central">🎯</text>`;
+  svg.innerHTML = h;
+}
+
+async function runDayX() {
+  if (gameState.adminOpen) return;
+  gameState.phase = 'wheel_active'; 
+  gameState.wheelSpinning = false;
+  document.getElementById('wheelWrap').classList.add('active');
+  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
+  document.getElementById('wheelRes').className = 'wheel-result';
+}
+
+async function spinWheel() {
+  if (gameState.adminOpen) return;
+  
+  const svg = document.getElementById('wheelSvg');
+  const resEl = document.getElementById('wheelRes');
+  resEl.textContent = 'Крутим...'; 
+  resEl.className = 'wheel-result';
+  
+  const num = Math.floor(Math.random() * 31) + 1, today = new Date().getDate();
+  const sa = 360 / 31, target = -((num - 0.5) * sa);
+  const spins = 6 + Math.floor(Math.random() * 3);
+  const deg = spins * 360 + target + ((Math.random() - 0.5) * (sa * 0.4));
+  
+  svg.style.transition = 'transform 9s cubic-bezier(0.2, 0.8, 0.15, 1)'; 
+  svg.style.transform = `rotate(${deg}deg)`;
+  
+  await sleep(9300);
+  
+  resEl.textContent = `Выпало: ${num}`;
+  if (num === today) {
+    resEl.textContent = `🎉 ДЕНЬ X! ${num} → Бонус 3л бензина!`; 
+    resEl.className = 'wheel-result win';
+    spawnConfetti(); 
+    addHist({ n: '3л Бензина (День X)', i: 'fuel3', r: 'legendary' });
+  } else { 
+    resEl.textContent = `Число ${num}. Сегодня ${today}. Не совпало.`; 
+  }
+  gameState.phase = 'showing_wheel_result';
+}
+
+function closeWheelResult() {
+  if (gameState.adminOpen) return;
+  
+  document.getElementById('wheelWrap').classList.remove('active');
+  const svg = document.getElementById('wheelSvg'); 
+  svg.style.transition = 'none'; 
+  svg.style.transform = 'rotate(0deg)';
+  
+  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
+  document.getElementById('wheelRes').className = 'wheel-result';
+  
+  document.getElementById('rouletteWrap').classList.remove('active');
+  const strip = document.getElementById('strip'); 
+  strip.style.transition = 'none'; 
+  strip.style.transform = 'translateX(0)'; 
+  strip.innerHTML = '';
+  
+  document.getElementById('caseWrap').classList.remove('hidden'); 
+  gameState.phase = 'idle';
+}
+
+// === HISTORY & UTILS ===
+function addHist(p) {
+  if (gameState.adminOpen) return;
+  gameState.opens++; 
+  gameState.hist.unshift({ n: p.n, i: p.i, r: p.r, t: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }) });
+  if (gameState.hist.length > 6) gameState.hist.pop(); 
+  renderHist();
+}
+
+function renderHist() {
+  document.getElementById('histList').innerHTML = gameState.hist.map(h => {
+    const c = R[h.r].c; 
+    return `<div class="h-item" style="--rc:${c}"><div class="h-icon">${I[h.i]}</div><div class="h-name">${h.n}</div><div class="h-time">${h.t}</div></div>`;
+  }).join('');
+}
+
+function spawnConfetti() {
+  const cols = ['#ffd700','#ff4500','#fff','#00e070','#a855f7','#3b82f6'];
+  for (let i = 0; i < 18; i++) {
+    const c = document.createElement('div'); c.className = 'confetti-piece';
+    c.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${cols[i%6]};animation-duration:${1.5+Math.random()}s;width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;`;
+    document.body.appendChild(c); 
+    safeTimeout(() => c.remove(), 3000);
+  }
+}
+
+// === ADMIN UI ===
+function openDevModal() {
+  gameState.adminOpen = true;
+  clearAllTimers();
+  
+  // Hard reset game state on open
+  gameState.phase = 'idle';
+  gameState.wheelSpinning = false;
+  
+  document.getElementById('pinModal').classList.add('active');
+  const inp = document.getElementById('pinIn');
+  if(inp) {
+    inp.value = '';
+    document.getElementById('pinErr').classList.remove('show');
+    setTimeout(() => inp.focus(), 50);
+  }
+}
+
+function setupDevUI() {
+  const btnCancel = document.getElementById('btnPinCancel');
+  const btnConfirm = document.getElementById('btnPinConfirm');
+  const btnAdmClose = document.getElementById('admClose');
+  
+  if (btnCancel) btnCancel.onclick = () => {
+    gameState.adminOpen = false;
+    document.getElementById('pinModal').classList.remove('active');
+    resetGame(); // Ensure UI is clean
+  };
+  
+  if (btnConfirm) btnConfirm.onclick = () => {
+    const inp = document.getElementById('pinIn');
+    if (inp && inp.value === '2468') {
+      gameState.adminOpen = true; // Keep admin state true
+      document.getElementById('pinModal').classList.remove('active');
+      renderAdm();
+      document.getElementById('admPanel').classList.add('open');
+    } else {
+      document.getElementById('pinErr').classList.add('show');
+      if(inp) inp.value = '';
+    }
+  };
+  
+  const pinIn = document.getElementById('pinIn');
+  if(pinIn) pinIn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); btnConfirm.click(); }
+  });
+  
+  if (btnAdmClose) btnAdmClose.onclick = () => {
+    gameState.adminOpen = false;
+    document.getElementById('admPanel').classList.remove('open');
+    resetGame();
+  };
+}
+
+function renderAdm() {
+  const wt = gameState.prizes.filter(p => p.ch > 0).reduce((s, p) => s + p.ch, 0);
+  let h = `<div style="margin-bottom:8px;font-size:9px;color:var(--text-dim);">
+    <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Открытий:</span><span style="color:var(--gold)">${gameState.opens}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span>Рабочий вес:</span><span style="color:var(--green)">${wt}</span></div></div>`;
+  
+  h += gameState.prizes.map((p, i) => {
+    const c = R[p.r].c, pct = p.ch > 0 ? ((p.ch / wt) * 100).toFixed(1) : '0';
+    const st = p.ch === 0 ? '(визуал)' : p.ch < 0 ? '(✕)' : `${pct}%`;
+    return `<div class="adm-row" style="--rc:${c}"><div style="width:14px;height:14px;color:${c}">${I[p.i]}</div><div style="flex:1;"><div style="font-size:9px;font-weight:600;">${p.n}</div><div class="adm-label">Вес: ${p.ch} → ${st}</div></div><input type="number" value="${p.ch}" step="0.1" onchange="gameState.prizes[${i}].ch=parseFloat(this.value)||0;renderAdm()"></div>`;
+  }).join('');
+  document.getElementById('admContent').innerHTML = h;
+}
+
+// Start
+init();
 </script>
 </body>
 </html>
