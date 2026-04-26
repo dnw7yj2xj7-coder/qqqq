@@ -2,581 +2,224 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AZS Case Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZS Case v2.0</title>
+
 <style>
-/* === STYLES (UNCHANGED VISUALLY) === */
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#06060a;--surface:#111118;--surface-2:#1a1a24;--text:#fff;--text-dim:#555568;--gold:#ffd700;--green:#00e070;--orange:#ff6b00;--purple:#a855f7;--blue:#3b82f6;--gray:#6b7280;--red:#ef4444;--panel-w:170px}
-body,html{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif}
-body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='60' viewBox='0 0 400 60'%3E%3Ctext x='10' y='40' font-family='system-ui,sans-serif' font-size='14' font-weight='700' fill='%2300e070' opacity='0.9' letter-spacing='1'%3EАЗС ЭКО prod by qqqq%3C/text%3E%3C/svg%3E");background-repeat:repeat;opacity:0.05;pointer-events:none;z-index:-1;transform:rotate(-45deg)}
-.app{height:100vh;display:flex;flex-direction:column;position:relative;z-index:1}
-header{width:100%;display:flex;justify-content:space-between;align-items:center;height:30px;flex-shrink:0;padding:0 14px;border-bottom:1px solid rgba(255,255,255,0.04)}
-.brand-line{display:flex;align-items:center;gap:5px}
-.eco-icon{width:14px;height:14px;color:var(--green);filter:drop-shadow(0 0 5px rgba(0,224,112,0.4))}
-.brand-text{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--green);text-shadow:0 0 10px rgba(0,224,112,0.3)}
-.prod-text{font-size:7px;color:var(--text-dim);letter-spacing:1px}
-.main-row{flex:1;display:flex;min-height:0;overflow:hidden}
-.prize-panel{width:var(--panel-w);flex-shrink:0;background:var(--surface);border-right:1px solid rgba(255,255,255,0.04);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:3px}
-.prize-panel-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:8px;text-align:center;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.04)}
-.prize-row{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.015);border-left:2.5px solid var(--rc);transition:background 0.15s}
-.prize-row:hover{background:rgba(255,255,255,0.04)}
-.prize-row-icon{width:22px;height:22px;color:var(--rc);flex-shrink:0}
-.prize-row-name{font-size:10px;font-weight:600;color:#fff;line-height:1.2}
-.prize-row-sub{font-size:7px;color:var(--text-dim);margin-top:1px}
-.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:12px;gap:14px;overflow:hidden}
-.case-wrap{display:flex;flex-direction:column;align-items:center;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;overflow:hidden;max-height:200px}
-.case-wrap.hidden{opacity:0;transform:scale(0.9);max-height:0;margin:0;padding:0;pointer-events:none}
-.case-box{width:170px;height:130px;background:linear-gradient(160deg,#2a2a3a,#14141c);border-radius:12px;border:1.5px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.04);position:relative}
-.case-box.vibrating{animation:vib 0.35s ease-in-out}
-@keyframes vib{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
-.case-brand{display:flex;flex-direction:column;align-items:center;gap:4px}
-.case-leaf{width:24px;height:24px;color:var(--green);filter:drop-shadow(0 0 6px rgba(0,224,112,0.4))}
-.case-label{font-size:11px;font-weight:800;letter-spacing:3px;color:var(--green);text-shadow:0 0 10px rgba(0,224,112,0.3)}
-.case-glow{position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(0,224,112,0.08),transparent 70%);border-radius:50%;z-index:-1;animation:gpulse 3s infinite}
-@keyframes gpulse{0%,100%{opacity:0.4;transform:scale(0.9)}50%{opacity:1;transform:scale(1.1)}}
-.roulette-wrap{width:100%;max-width:100%;height:160px;background:var(--surface);border-radius:14px;border:1px solid rgba(255,255,255,0.05);overflow:hidden;opacity:0;transform:scale(0.97);pointer-events:none;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;max-height:0;margin:0}
-.roulette-wrap.active{opacity:1;transform:scale(1);pointer-events:auto;max-height:200px;margin:0}
-.roulette-viewport{width:100%;height:100%;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
-.roulette-strip{display:flex;height:100%;will-change:transform}
-.pointer{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;width:2px;height:100%;background:linear-gradient(180deg,var(--gold),transparent)}
-.pointer::before{content:'▼';position:absolute;top:-3px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:14px;filter:drop-shadow(0 0 5px var(--gold))}
-.card{flex-shrink:0;width:140px;height:100%;background:var(--surface-2);border-right:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;position:relative}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--rc);box-shadow:0 0 8px var(--rc)}
-.card-icon{width:44px;height:44px;margin-bottom:6px;color:var(--rc)}
-.card-name{font-size:10px;font-weight:700;text-transform:uppercase;color:#fff;text-align:center;line-height:1.15}
-.card-rarity{font-size:7px;font-weight:700;text-transform:uppercase;color:var(--rc);opacity:0.6;margin-top:3px}
-.card.legendary{background:linear-gradient(180deg,#1e1a08,var(--surface-2))}
-.card.legendary .card-icon{filter:drop-shadow(0 0 6px rgba(255,215,0,0.5))}
-.card.dayx-card{background:linear-gradient(180deg,#1a1408,var(--surface-2));animation:dayxPulse 2s infinite}
-@keyframes dayxPulse{0%,100%{box-shadow:inset 0 0 15px rgba(249,115,22,0.05)}50%{box-shadow:inset 0 0 15px rgba(249,115,22,0.12)}}
-.result-area{width:100%;max-width:420px;min-height:0;max-height:0;overflow:hidden;opacity:0;transition:max-height 0.4s,opacity 0.4s,margin 0.4s;margin:0}
-.result-area.active{max-height:120px;opacity:1;margin-top:4px}
-.result-card{background:var(--surface);border-radius:12px;padding:12px 20px;text-align:center;border:1px solid rgba(255,255,255,0.05);box-shadow:0 6px 20px rgba(0,0,0,0.4);position:relative;overflow:hidden;width:100%}
-.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--rc);box-shadow:0 0 10px var(--rc)}
-.res-icon{width:32px;height:32px;margin:0 auto 5px;color:var(--rc)}
-.res-name{font-size:16px;font-weight:800;text-transform:uppercase;margin-bottom:3px}
-.res-badge{font-size:8px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,0.04);border:1px solid var(--rc);color:var(--rc)}
-.res-hint{font-size:9px;color:var(--text-dim);margin-top:5px;letter-spacing:1px}
-.wheel-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;transform:scale(0.9);pointer-events:none;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;max-height:0;margin:0;overflow:hidden}
-.wheel-wrap.active{opacity:1;transform:scale(1);pointer-events:auto;max-height:500px;margin:0}
-.wheel-title{font-size:18px;font-weight:800;color:var(--gold);text-shadow:0 0 12px rgba(255,215,0,0.4);letter-spacing:1px}
-.wheel-container{position:relative;width:320px;height:320px;flex-shrink:0}
-.wheel-svg{width:100%;height:100%;transition:transform 9s cubic-bezier(0.2,0.8,0.15,1)}
-.wheel-pointer-top{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:26px;color:var(--gold);filter:drop-shadow(0 0 8px var(--gold));z-index:5}
-.wheel-result{font-size:14px;font-weight:600;color:var(--text-dim);text-align:center;min-height:20px}
-.wheel-result.win{color:var(--green);text-shadow:0 0 8px rgba(0,224,112,0.4)}
-.wheel-hint{font-size:10px;color:var(--text-dim);letter-spacing:1px}
-.history{width:100%;max-height:36px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;flex-shrink:0;padding:0 14px}
-.h-item{display:flex;align-items:center;gap:5px;padding:4px 7px;background:var(--surface);border-radius:5px;border-left:2px solid var(--rc);font-size:9px}
-.h-icon{width:12px;height:12px;color:var(--rc);flex-shrink:0}
-.h-name{flex:1;font-weight:600}
-.h-time{color:var(--text-dim);font-size:7px}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s}
-.modal-overlay.active{opacity:1;pointer-events:auto}
-.modal{background:var(--surface);padding:18px;border-radius:14px;width:90%;max-width:250px;border:1px solid rgba(255,255,255,0.08);text-align:center}
-.modal h3{font-size:13px;margin-bottom:4px}
-.modal p{color:var(--text-dim);font-size:10px;margin-bottom:8px}
-.pin-in{width:100%;padding:9px;font-size:16px;text-align:center;letter-spacing:5px;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#fff;margin:8px 0;outline:none}
-.pin-in:focus{border-color:var(--gold)}
-.m-btns{display:flex;gap:6px;margin-top:8px}
-.m-btn{flex:1;padding:7px;border:none;border-radius:7px;font-size:10px;font-weight:600;cursor:pointer}
-.m-cancel{background:rgba(255,255,255,0.05);color:var(--text-dim)}
-.m-confirm{background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff}
-.err{color:var(--red);font-size:9px;margin-top:5px;display:none}
-.err.show{display:block}
-.admin-panel{position:fixed;top:0;right:0;width:100%;max-width:300px;height:100vh;background:var(--surface);border-left:1px solid rgba(255,255,255,0.08);z-index:1001;transform:translateX(100%);transition:transform 0.3s;overflow-y:auto}
-.admin-panel.open{transform:translateX(0)}
-.adm-head{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
-.adm-close{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer}
-.adm-content{padding:12px}
-.adm-row{display:flex;align-items:center;gap:7px;padding:6px;background:rgba(255,255,255,0.02);border-radius:5px;margin-bottom:4px;border-left:2px solid var(--rc)}
-.adm-row input{width:40px;padding:2px;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:3px;color:#fff;text-align:center;font-size:10px}
-.adm-label{font-size:8px;color:var(--text-dim)}
-.confetti-piece{position:fixed;border-radius:2px;animation:cfall linear forwards;pointer-events:none;z-index:9999}
-@keyframes cfall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
-::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
-@media(max-width:700px){:root{--panel-w:140px}.prize-row{padding:5px 6px}.prize-row-name{font-size:9px}.prize-row-icon{width:18px;height:18px}.card{width:110px}.card-icon{width:36px;height:36px}.roulette-wrap{height:140px}.wheel-container{width:260px;height:260px}}
-@media(max-width:500px){:root{--panel-w:110px}.prize-row-name{font-size:8px}.prize-row-sub{display:none}.card{width:90px}.card-icon{width:28px;height:28px}.roulette-wrap{height:120px}.wheel-container{width:220px;height:220px}.case-box{width:150px;height:110px}.case-label{font-size:10px}.case-leaf{width:20px;height:20px}}
+body {
+  margin:0;
+  font-family: Arial;
+  background:#0b0b10;
+  color:white;
+  overflow:hidden;
+}
+
+.center {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  gap:20px;
+}
+
+.case {
+  width:180px;
+  height:140px;
+  background:#1a1a22;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border:1px solid #2a2a35;
+  transition:0.2s;
+}
+.case:active { transform:scale(0.97); }
+
+.roulette {
+  width:90%;
+  height:140px;
+  overflow:hidden;
+  background:#111;
+  border-radius:10px;
+  display:none;
+  position:relative;
+}
+
+.strip {
+  display:flex;
+  height:100%;
+  transition:transform 6s cubic-bezier(.12,.8,.12,1);
+}
+
+.item {
+  min-width:120px;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#1d1d28;
+  border-right:1px solid #2b2b3a;
+}
+
+.pointer {
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  width:2px;
+  height:100%;
+  background:gold;
+}
+
+.result {
+  display:none;
+  font-size:20px;
+}
+
+.admin {
+  position:fixed;
+  right:10px;
+  top:10px;
+  padding:6px 10px;
+  background:#222;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.panel {
+  position:fixed;
+  right:0;
+  top:0;
+  width:240px;
+  height:100%;
+  background:#15151d;
+  transform:translateX(100%);
+  transition:.3s;
+  padding:10px;
+}
+
+.panel.open { transform:translateX(0); }
 </style>
 </head>
+
 <body>
-<div class="app">
-<header><div class="brand-line"><svg class="eco-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg><div><div class="brand-text">АЗС ЭКО</div><div class="prod-text">prod by qqqq</div></div></div></header>
-<div class="main-row">
-<div class="prize-panel" id="prizePanel"></div>
-<div class="stage">
-<div class="case-wrap" id="caseWrap"><div class="case-glow"></div><div class="case-box" id="caseBox"><div class="case-brand"><svg class="case-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg><div class="case-label">АЗС ЭКО</div></div></div></div>
-<div class="roulette-wrap" id="rouletteWrap"><div class="pointer"></div><div class="roulette-viewport"><div class="roulette-strip" id="strip"></div></div></div>
-<div class="result-area" id="resArea"><div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div></div>
-<div class="wheel-wrap" id="wheelWrap"><div class="wheel-title">🎯 День X</div><div class="wheel-container"><div class="wheel-pointer-top">▼</div><svg class="wheel-svg" id="wheelSvg" viewBox="0 0 300 300"></svg></div><div class="wheel-result" id="wheelRes">Нажмите Enter</div><div class="wheel-hint">Enter — крутить</div></div>
-</div></div>
-<div class="history" id="histList"></div>
+
+<div class="admin" id="adminBtn">admin</div>
+
+<div class="center">
+
+  <div class="case" id="case">CASE</div>
+
+  <div class="roulette" id="roulette">
+    <div class="pointer"></div>
+    <div class="strip" id="strip"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+
 </div>
-<div class="modal-overlay" id="pinModal"><div class="modal"><h3>🔐 Admin Access</h3><p>Введите PIN для доступа</p><input type="password" class="pin-in" id="pinIn" maxlength="4" placeholder="••••" inputmode="numeric"><div class="m-btns"><button class="m-btn m-cancel" id="btnPinCancel">Отмена</button><button class="m-btn m-confirm" id="btnPinConfirm">Войти</button></div><div class="err" id="pinErr">Неверный PIN</div></div></div>
-<div class="admin-panel" id="admPanel"><div class="adm-head"><h3>⚙️ Admin Panel</h3><button class="adm-close" id="admClose">✕</button></div><div class="adm-content" id="admContent"></div></div>
+
+<div class="panel" id="panel">
+  <h4>ADMIN</h4>
+  <p>state editor</p>
+</div>
+
 <script>
-/* === STABLE ENGINE === */
-const R = { common:{n:'Common',c:'#6b7280'}, uncommon:{n:'Uncommon',c:'#06b6d4'}, rare:{n:'Rare',c:'#3b82f6'}, epic:{n:'Epic',c:'#a855f7'}, legendary:{n:'Legendary',c:'#ffd700'}, dayx:{n:'Событие',c:'#f97316'} };
-const I = {
-  sweet:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 38V56"/><path d="M20 38C20 26 26 22 32 22C38 22 44 26 44 38"/><circle cx="32" cy="22" r="10"/><path d="M24 18L28 22"/><path d="M40 18L36 22"/></svg>`,
-  wipes:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="12" y="14" width="40" height="36" rx="4"/><path d="M12 26H52"/><path d="M32 26V50"/><path d="M20 14V10C20 6 24 2 32 2C40 2 44 6 44 10V14"/></svg>`,
-  coffee:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 20H44V44C44 50 40 54 34 54H26C20 54 16 50 16 44V20Z"/><path d="M44 28H48C52 28 54 32 54 36C54 40 52 44 48 44H44"/><path d="M24 12V16"/><path d="M32 12V16"/><path d="M40 12V16"/></svg>`,
-  fuel1:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">1L</text></svg>`,
-  fuel2:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">2L</text></svg>`,
-  fuel3:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">3L</text></svg>`,
-  cash:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="14" width="48" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M24 32H40"/><path d="M32 24V40"/></svg>`,
-  cash5:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="14" width="52" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M22 32H42"/><path d="M32 22V42"/></svg>`,
-  dayx:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="26"/><path d="M32 16V32L42 38"/></svg>`
+
+const STATE = {
+  IDLE: "idle",
+  SPIN: "spin",
+  RESULT: "result"
 };
 
-const DEFAULTS = [
-  {id:1, n:'Сладкий Бонус',  i:'sweet',  r:'common',    ch:15},
-  {id:2, n:'Салфетки',       i:'wipes',  r:'common',    ch:9},
-  {id:3, n:'Кофе Американо', i:'coffee', r:'uncommon',  ch:8},
-  {id:4, n:'100 ₽',          i:'cash',   r:'rare',      ch:7.8},
-  {id:5, n:'1л Бензина',     i:'fuel1',  r:'rare',      ch:4},
-  {id:6, n:'2л Бензина',     i:'fuel2',  r:'epic',      ch:-1},
-  {id:7, n:'3000 ₽',         i:'cash',   r:'legendary', ch:0},
-  {id:8, n:'5000 ₽',         i:'cash5',  r:'legendary', ch:0},
-  {id:9, n:'День X',         i:'dayx',   r:'dayx',      ch:51}
+let state = STATE.IDLE;
+
+let locked = false;
+
+const items = [
+  "Салфетки",
+  "Кофе",
+  "1л бензина",
+  "2л бензина",
+  "100₽",
+  "Сладкий бонус",
+  "День X"
 ];
 
-// === CENTRALIZED STATE ===
-let gameState = {
-  prizes: JSON.parse(JSON.stringify(DEFAULTS)),
-  hist: [],
-  opens: 0,
-  phase: 'idle', // idle, spinning, showing_result, wheel_active, showing_wheel_result
-  wheelSpinning: false,
-  adminOpen: false,
-  timeouts: []
+const caseBtn = document.getElementById("case");
+const roulette = document.getElementById("roulette");
+const strip = document.getElementById("strip");
+const result = document.getElementById("result");
+
+function setState(s){
+  state = s;
+}
+
+function buildStrip(){
+  strip.innerHTML = "";
+  for(let i=0;i<40;i++){
+    const div = document.createElement("div");
+    div.className = "item";
+    div.textContent = items[Math.floor(Math.random()*items.length)];
+    strip.appendChild(div);
+  }
+}
+
+function spin(){
+  if(locked) return;
+  locked = true;
+
+  setState(STATE.SPIN);
+
+  buildStrip();
+
+  roulette.style.display = "block";
+
+  setTimeout(()=>{
+    const offset = -(120*25);
+    strip.style.transform = `translateX(${offset}px)`;
+
+    setTimeout(()=>{
+      showResult();
+    }, 6000);
+
+  },100);
+}
+
+function showResult(){
+  setState(STATE.RESULT);
+
+  const win = items[Math.floor(Math.random()*items.length)];
+
+  result.style.display = "block";
+  result.textContent = "Выигрыш: " + win;
+
+  locked = false;
+}
+
+function reset(){
+  setState(STATE.IDLE);
+  roulette.style.display = "none";
+  result.style.display = "none";
+  strip.style.transform = "translateX(0)";
+}
+
+caseBtn.onclick = spin;
+
+document.addEventListener("keydown",(e)=>{
+  if(e.key === "Enter"){
+    if(state === STATE.IDLE) spin();
+    else if(state === STATE.RESULT) reset();
+  }
+});
+
+document.getElementById("adminBtn").onclick = ()=>{
+  document.getElementById("panel").classList.toggle("open");
 };
 
-const CW = 140, VIS = 65, WIN = 56, SPIN_MS = 9000;
-
-// === SAFE TIMER SYSTEM ===
-function safeTimeout(fn, ms) {
-  const id = setTimeout(fn, ms);
-  gameState.timeouts.push(id);
-  return id;
-}
-
-function clearAllTimers() {
-  gameState.timeouts.forEach(clearTimeout);
-  gameState.timeouts = [];
-}
-
-function sleep(ms) { return new Promise(resolve => safeTimeout(resolve, ms)); }
-
-// === HARD RESET ===
-function resetGame() {
-  clearAllTimers();
-  gameState.phase = 'idle';
-  gameState.wheelSpinning = false;
-  gameState.adminOpen = false;
-
-  // UI Reset
-  document.getElementById('pinModal').classList.remove('active');
-  document.getElementById('admPanel').classList.remove('open');
-  document.getElementById('resArea').classList.remove('active');
-  document.getElementById('rouletteWrap').classList.remove('active');
-  document.getElementById('wheelWrap').classList.remove('active');
-  document.getElementById('caseWrap').classList.remove('hidden');
-  document.getElementById('caseBox').classList.remove('vibrating');
-  
-  // Ensure inputs are clear
-  const pinIn = document.getElementById('pinIn');
-  if(pinIn) pinIn.value = '';
-  document.getElementById('pinErr').classList.remove('show');
-
-  // Ensure Result DOM is clean
-  const resArea = document.getElementById('resArea');
-  resArea.innerHTML = `<div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div>`;
-}
-
-// === INITIALIZATION ===
-function init() {
-  buildWheel();
-  renderPrizePanel();
-  renderHist();
-  setupKeyboard();
-  setupDevUI();
-}
-
-function renderPrizePanel() {
-  const el = document.getElementById('prizePanel');
-  let h = '<div class="prize-panel-title">Лоты кейса</div>';
-  gameState.prizes.forEach(p => { 
-    const c = R[p.r].c; 
-    h += `<div class="prize-row" style="--rc:${c}"><div class="prize-row-icon">${I[p.i]}</div><div><div class="prize-row-name">${p.n}</div><div class="prize-row-sub">${R[p.r].n}</div></div></div>`; 
-  });
-  el.innerHTML = h;
-}
-
-function getWinner() {
-  const pool = gameState.prizes.filter(p => p.ch > 0);
-  const total = pool.reduce((s, p) => s + p.ch, 0);
-  let r = Math.random() * total;
-  for (const p of pool) { r -= p.ch; if (r <= 0) return p; }
-  return pool[pool.length - 1];
-}
-
-// === KEYBOARD HANDLER ===
-function setupKeyboard() {
-  // Remove old listener if any (to prevent duplicates if init runs twice)
-  document.removeEventListener('keydown', handleGlobalKey);
-  document.addEventListener('keydown', handleGlobalKey);
-}
-
-function handleGlobalKey(e) {
-  const key = e.key.toLowerCase();
-  
-  // F for Admin
-  if (key === 'f') { 
-    e.preventDefault(); 
-    openDevModal(); 
-    return; 
-  }
-  
-  // Enter for Game
-  if (key === 'enter') {
-    // Do not trigger if typing in inputs
-    if (document.activeElement?.tagName === 'INPUT') return;
-    // Do not trigger if admin is open
-    if (gameState.adminOpen) return;
-
-    e.preventDefault();
-    try {
-      switch (gameState.phase) {
-        case 'idle': startSpin(); break;
-        case 'showing_result': closeResult(); break;
-        case 'wheel_active': 
-          if (!gameState.wheelSpinning) { 
-            gameState.wheelSpinning = true; 
-            spinWheel(); 
-          } 
-          break;
-        case 'showing_wheel_result': closeWheelResult(); break;
-      }
-    } catch (err) {
-      console.error("Action error:", err);
-      resetGame();
-    }
-  }
-}
-
-// === GAME FLOW ===
-async function startSpin() {
-  // Safety check
-  if (gameState.phase !== 'idle') return;
-  
-  try {
-    gameState.phase = 'spinning';
-    
-    // Clean slate
-    document.getElementById('caseWrap').classList.remove('hidden');
-    document.getElementById('rouletteWrap').classList.remove('active');
-    document.getElementById('wheelWrap').classList.remove('active');
-    document.getElementById('resArea').classList.remove('active');
-    
-    const strip = document.getElementById('strip');
-    strip.style.transition = 'none'; 
-    strip.style.transform = 'translateX(0)'; 
-    strip.innerHTML = '';
-    
-    const wSvg = document.getElementById('wheelSvg');
-    wSvg.style.transition = 'none'; 
-    wSvg.style.transform = 'rotate(0deg)';
-    document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
-    document.getElementById('wheelRes').className = 'wheel-result';
-    
-    await sleep(200);
-    
-    document.getElementById('caseBox').classList.add('vibrating');
-    await sleep(350);
-    document.getElementById('caseBox').classList.remove('vibrating');
-    
-    document.getElementById('caseWrap').classList.add('hidden');
-    document.getElementById('rouletteWrap').classList.add('active');
-    await sleep(400);
-    
-    const win = getWinner();
-    buildStrip(win);
-    await spinRoulette();
-    await sleep(300);
-    
-    if (win.n === 'День X') {
-      document.getElementById('rouletteWrap').classList.remove('active');
-      await sleep(300);
-      await runDayX();
-    } else {
-      showResult(win); 
-      addHist(win); 
-      gameState.phase = 'showing_result';
-    }
-  } catch (err) {
-    console.error("Spin Error:", err);
-    resetGame();
-  }
-}
-
-function buildStrip(win) {
-  const strip = document.getElementById('strip');
-  let h = '';
-  for (let i = 0; i < VIS; i++) {
-    const p = (i === WIN) ? win : gameState.prizes[Math.floor(Math.random() * gameState.prizes.length)];
-    const c = R[p.r].c;
-    const leg = p.r === 'legendary' ? ' legendary' : '';
-    const dx = p.r === 'dayx' ? ' dayx-card' : '';
-    h += `<div class="card${leg}${dx}" style="--rc:${c}"><div class="card-icon">${I[p.i]}</div><div class="card-name">${p.n}</div><div class="card-rarity">${R[p.r].n}</div></div>`;
-  }
-  strip.innerHTML = h;
-}
-
-function spinRoulette() {
-  return new Promise(res => {
-    const strip = document.getElementById('strip');
-    const vp = document.querySelector('.roulette-viewport');
-    
-    strip.style.transition = 'none'; 
-    strip.style.transform = 'translateX(0)'; 
-    void strip.offsetWidth;
-    
-    const t = -((WIN * CW) + (CW / 2) - (vp.clientWidth / 2) + ((Math.random() * 40) - 20));
-    
-    requestAnimationFrame(() => {
-      strip.style.transition = `transform ${SPIN_MS}ms cubic-bezier(0.2, 0.8, 0.15, 1)`;
-      strip.style.transform = `translateX(${t}px)`;
-    });
-    
-    let done = false;
-    const fin = () => { 
-      if (done) return; 
-      done = true; 
-      strip.removeEventListener('transitionend', onE); 
-      // Don't clear all timeouts here, just this one if we could, but let's just resolve
-      res(); 
-    };
-    const onE = e => { if (e.propertyName === 'transform') fin(); };
-    const fb = safeTimeout(fin, SPIN_MS + 500);
-    strip.addEventListener('transitionend', onE);
-  });
-}
-
-function showResult(p) {
-  if (gameState.adminOpen) return;
-  
-  const c = R[p.r].c;
-  const iconEl = document.getElementById('resIcon');
-  const nameEl = document.getElementById('resName');
-  const badgeEl = document.getElementById('resBadge');
-  
-  if (iconEl) iconEl.innerHTML = I[p.i];
-  if (iconEl) iconEl.style.color = c;
-  
-  const cardEl = document.getElementById('resCard');
-  if(cardEl) cardEl.style.setProperty('--rc', c);
-  
-  if (nameEl) nameEl.textContent = p.n;
-  if (badgeEl) {
-    badgeEl.textContent = R[p.r].n; 
-    badgeEl.style.color = c; 
-    badgeEl.style.borderColor = c;
-  }
-  
-  document.getElementById('resArea').classList.add('active');
-  if (p.r === 'legendary') spawnConfetti();
-}
-
-function closeResult() {
-  if (gameState.adminOpen) return;
-  
-  document.getElementById('resArea').classList.remove('active');
-  document.getElementById('rouletteWrap').classList.remove('active');
-  
-  const strip = document.getElementById('strip'); 
-  strip.style.transition = 'none'; 
-  strip.style.transform = 'translateX(0)'; 
-  strip.innerHTML = '';
-  
-  document.getElementById('caseWrap').classList.remove('hidden'); 
-  gameState.phase = 'idle';
-}
-
-// === WHEEL LOGIC ===
-function buildWheel() {
-  const svg = document.getElementById('wheelSvg');
-  if (!svg) return;
-  const cx = 150, cy = 150, r = 130, n = 31, sa = 360 / n;
-  let h = '';
-  for (let i = 0; i < n; i++) {
-    const a1 = (i * sa - 90) * Math.PI / 180, a2 = ((i + 1) * sa - 90) * Math.PI / 180;
-    h += `<path d="M${cx},${cy} L${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)} A${r},${r} 0 0,1 ${cx+r*Math.cos(a2)},${cy+r*Math.sin(a2)} Z" fill="${i%2?'#1a1a28':'#222235'}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
-    const ma = ((i + 0.5) * sa - 90) * Math.PI / 180, nr = r * 0.78;
-    h += `<text x="${cx+nr*Math.cos(ma)}" y="${cy+nr*Math.sin(ma)}" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(${(i+0.5)*sa},${cx+nr*Math.cos(ma)},${cy+nr*Math.sin(ma)})">${i+1}</text>`;
-  }
-  h += `<circle cx="${cx}" cy="${cy}" r="24" fill="#111118" stroke="#ffd700" stroke-width="2"/><text x="${cx}" y="${cy}" fill="#ffd700" font-size="16" text-anchor="middle" dominant-baseline="central">🎯</text>`;
-  svg.innerHTML = h;
-}
-
-async function runDayX() {
-  if (gameState.adminOpen) return;
-  gameState.phase = 'wheel_active'; 
-  gameState.wheelSpinning = false;
-  document.getElementById('wheelWrap').classList.add('active');
-  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
-  document.getElementById('wheelRes').className = 'wheel-result';
-}
-
-async function spinWheel() {
-  if (gameState.adminOpen) return;
-  
-  const svg = document.getElementById('wheelSvg');
-  const resEl = document.getElementById('wheelRes');
-  resEl.textContent = 'Крутим...'; 
-  resEl.className = 'wheel-result';
-  
-  const num = Math.floor(Math.random() * 31) + 1, today = new Date().getDate();
-  const sa = 360 / 31, target = -((num - 0.5) * sa);
-  const spins = 6 + Math.floor(Math.random() * 3);
-  const deg = spins * 360 + target + ((Math.random() - 0.5) * (sa * 0.4));
-  
-  svg.style.transition = 'transform 9s cubic-bezier(0.2, 0.8, 0.15, 1)'; 
-  svg.style.transform = `rotate(${deg}deg)`;
-  
-  await sleep(9300);
-  
-  resEl.textContent = `Выпало: ${num}`;
-  if (num === today) {
-    resEl.textContent = `🎉 ДЕНЬ X! ${num} → Бонус 3л бензина!`; 
-    resEl.className = 'wheel-result win';
-    spawnConfetti(); 
-    addHist({ n: '3л Бензина (День X)', i: 'fuel3', r: 'legendary' });
-  } else { 
-    resEl.textContent = `Число ${num}. Сегодня ${today}. Не совпало.`; 
-  }
-  gameState.phase = 'showing_wheel_result';
-}
-
-function closeWheelResult() {
-  if (gameState.adminOpen) return;
-  
-  document.getElementById('wheelWrap').classList.remove('active');
-  const svg = document.getElementById('wheelSvg'); 
-  svg.style.transition = 'none'; 
-  svg.style.transform = 'rotate(0deg)';
-  
-  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; 
-  document.getElementById('wheelRes').className = 'wheel-result';
-  
-  document.getElementById('rouletteWrap').classList.remove('active');
-  const strip = document.getElementById('strip'); 
-  strip.style.transition = 'none'; 
-  strip.style.transform = 'translateX(0)'; 
-  strip.innerHTML = '';
-  
-  document.getElementById('caseWrap').classList.remove('hidden'); 
-  gameState.phase = 'idle';
-}
-
-// === HISTORY & UTILS ===
-function addHist(p) {
-  if (gameState.adminOpen) return;
-  gameState.opens++; 
-  gameState.hist.unshift({ n: p.n, i: p.i, r: p.r, t: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }) });
-  if (gameState.hist.length > 6) gameState.hist.pop(); 
-  renderHist();
-}
-
-function renderHist() {
-  document.getElementById('histList').innerHTML = gameState.hist.map(h => {
-    const c = R[h.r].c; 
-    return `<div class="h-item" style="--rc:${c}"><div class="h-icon">${I[h.i]}</div><div class="h-name">${h.n}</div><div class="h-time">${h.t}</div></div>`;
-  }).join('');
-}
-
-function spawnConfetti() {
-  const cols = ['#ffd700','#ff4500','#fff','#00e070','#a855f7','#3b82f6'];
-  for (let i = 0; i < 18; i++) {
-    const c = document.createElement('div'); c.className = 'confetti-piece';
-    c.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${cols[i%6]};animation-duration:${1.5+Math.random()}s;width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;`;
-    document.body.appendChild(c); 
-    safeTimeout(() => c.remove(), 3000);
-  }
-}
-
-// === ADMIN UI ===
-function openDevModal() {
-  gameState.adminOpen = true;
-  clearAllTimers();
-  
-  // Hard reset game state on open
-  gameState.phase = 'idle';
-  gameState.wheelSpinning = false;
-  
-  document.getElementById('pinModal').classList.add('active');
-  const inp = document.getElementById('pinIn');
-  if(inp) {
-    inp.value = '';
-    document.getElementById('pinErr').classList.remove('show');
-    setTimeout(() => inp.focus(), 50);
-  }
-}
-
-function setupDevUI() {
-  const btnCancel = document.getElementById('btnPinCancel');
-  const btnConfirm = document.getElementById('btnPinConfirm');
-  const btnAdmClose = document.getElementById('admClose');
-  
-  if (btnCancel) btnCancel.onclick = () => {
-    gameState.adminOpen = false;
-    document.getElementById('pinModal').classList.remove('active');
-    resetGame(); // Ensure UI is clean
-  };
-  
-  if (btnConfirm) btnConfirm.onclick = () => {
-    const inp = document.getElementById('pinIn');
-    if (inp && inp.value === '2468') {
-      gameState.adminOpen = true; // Keep admin state true
-      document.getElementById('pinModal').classList.remove('active');
-      renderAdm();
-      document.getElementById('admPanel').classList.add('open');
-    } else {
-      document.getElementById('pinErr').classList.add('show');
-      if(inp) inp.value = '';
-    }
-  };
-  
-  const pinIn = document.getElementById('pinIn');
-  if(pinIn) pinIn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); btnConfirm.click(); }
-  });
-  
-  if (btnAdmClose) btnAdmClose.onclick = () => {
-    gameState.adminOpen = false;
-    document.getElementById('admPanel').classList.remove('open');
-    resetGame();
-  };
-}
-
-function renderAdm() {
-  const wt = gameState.prizes.filter(p => p.ch > 0).reduce((s, p) => s + p.ch, 0);
-  let h = `<div style="margin-bottom:8px;font-size:9px;color:var(--text-dim);">
-    <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Открытий:</span><span style="color:var(--gold)">${gameState.opens}</span></div>
-    <div style="display:flex;justify-content:space-between;"><span>Рабочий вес:</span><span style="color:var(--green)">${wt}</span></div></div>`;
-  
-  h += gameState.prizes.map((p, i) => {
-    const c = R[p.r].c, pct = p.ch > 0 ? ((p.ch / wt) * 100).toFixed(1) : '0';
-    const st = p.ch === 0 ? '(визуал)' : p.ch < 0 ? '(✕)' : `${pct}%`;
-    return `<div class="adm-row" style="--rc:${c}"><div style="width:14px;height:14px;color:${c}">${I[p.i]}</div><div style="flex:1;"><div style="font-size:9px;font-weight:600;">${p.n}</div><div class="adm-label">Вес: ${p.ch} → ${st}</div></div><input type="number" value="${p.ch}" step="0.1" onchange="gameState.prizes[${i}].ch=parseFloat(this.value)||0;renderAdm()"></div>`;
-  }).join('');
-  document.getElementById('admContent').innerHTML = h;
-}
-
-// Start
-init();
 </script>
+
 </body>
 </html>
-
