@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="ru"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;title&gt;AZS Case v2.0&lt;/title&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;style&gt;</span></p>
+<p class="p1"><span class="s1">body {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>margin:0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>font-family: Arial;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#0b0b10;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>color:white;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>overflow:hidden;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.center {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:flex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>flex-direction:column;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>align-items:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>justify-content:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:100vh;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>gap:20px;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.case {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>width:180px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:140px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#1a1a22;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>border-radius:12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:flex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>align-items:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>justify-content:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>cursor:pointer;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>border:1px solid #2a2a35;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>transition:0.2s;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">.case:active { transform:scale(0.97); }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.roulette {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>width:90%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:140px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>overflow:hidden;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#111;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>border-radius:10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:none;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>position:relative;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.strip {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:flex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:100%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>transition:transform 6s cubic-bezier(.12,.8,.12,1);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.item {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>min-width:120px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:100%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:flex;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>align-items:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>justify-content:center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#1d1d28;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>border-right:1px solid #2b2b3a;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.pointer {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>position:absolute;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>left:50%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>top:0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>transform:translateX(-50%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>width:2px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:100%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:gold;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.result {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>display:none;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>font-size:20px;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.admin {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>position:fixed;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>right:10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>top:10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>padding:6px 10px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#222;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>font-size:12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>cursor:pointer;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.panel {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>position:fixed;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>right:0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>top:0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>width:240px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>height:100%;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>background:#15151d;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>transform:translateX(100%);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>transition:.3s;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>padding:10px;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.panel.open { transform:translateX(0); }</span></p>
+<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div class="admin" id="adminBtn"&gt;admin&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div class="center"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="case" id="case"&gt;CASE&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="roulette" id="roulette"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="pointer"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="strip" id="strip"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="result" id="result"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div class="panel" id="panel"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;h4&gt;ADMIN&lt;/h4&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;p&gt;state editor&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const STATE = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>IDLE: "idle",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>SPIN: "spin",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>RESULT: "result"</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">let state = STATE.IDLE;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">let locked = false;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const items = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"Салфетки",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"Кофе",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"1л бензина",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"2л бензина",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"100₽",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"Сладкий бонус",</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"День X"</span></p>
+<p class="p1"><span class="s1">];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const caseBtn = document.getElementById("case");</span></p>
+<p class="p1"><span class="s1">const roulette = document.getElementById("roulette");</span></p>
+<p class="p1"><span class="s1">const strip = document.getElementById("strip");</span></p>
+<p class="p1"><span class="s1">const result = document.getElementById("result");</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function setState(s){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>state = s;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function buildStrip(){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>strip.innerHTML = "";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;40;i++){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const div = document.createElement("div");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.className = "item";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.textContent = items[Math.floor(Math.random()*items.length)];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>strip.appendChild(div);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function spin(){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(locked) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>locked = true;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>setState(STATE.SPIN);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>buildStrip();</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>roulette.style.display = "block";</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>setTimeout(()=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const offset = -(120*25);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>strip.style.transform = `translateX(${offset}px)`;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(()=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>showResult();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}, 6000);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>},100);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function showResult(){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>setState(STATE.RESULT);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const win = items[Math.floor(Math.random()*items.length)];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>result.style.display = "block";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>result.textContent = "Выигрыш: " + win;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>locked = false;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function reset(){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>setState(STATE.IDLE);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>roulette.style.display = "none";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>result.style.display = "none";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>strip.style.transform = "translateX(0)";</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">caseBtn.onclick = spin;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">document.addEventListener("keydown",(e)=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(e.key === "Enter"){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(state === STATE.IDLE) spin();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>else if(state === STATE.RESULT) reset();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">document.getElementById("adminBtn").onclick = ()=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById("panel").classList.toggle("open");</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
