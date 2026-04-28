@@ -4,220 +4,611 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AZS Case Simulator</title>
-
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+/* === 🌌 CYBERPUNK CORE & BACKGROUND === */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#020205;--surface:#0b0b12;--surface-2:#1a1a24;--text:#fff;--text-dim:#8899aa;--gold:#ffd700;--green:#00e070;--orange:#ff6b00;--purple:#a855f7;--blue:#3b82f6;--gray:#6b7280;--red:#ef4444;--panel-w:170px}
 
-:root{
---bg:#05050a;
---surface:#111118;
---text:#fff;
---text-dim:#8899aa;
---gold:#ffd700;
---green:#00e070;
---blue:#3b82f6;
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif}
+
+body { background-color: #05050a; }
+
+body::before {
+    content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+    background-image:
+        linear-gradient(rgba(0, 224, 112, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px, 50px 50px;
+    perspective: 1000px;
 }
 
-/* === BODY === */
-body{
-height:100vh;
-overflow:hidden;
-background:#05050a;
-color:#fff;
-font-family:sans-serif;
+body::after {
+    content:''; position:fixed; inset:-50%; z-index:-1; pointer-events:none;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(0, 224, 112, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.12) 0%, transparent 40%),
+        repeating-linear-gradient(
+            -45deg, transparent, transparent 100px,
+            rgba(59, 130, 246, 0.08) 100px, rgba(59, 130, 246, 0.08) 105px
+        );
+    animation: cyberDrift 40s linear infinite;
 }
 
-/* === НЕОНОВЫЙ ФОН (ИСПРАВЛЕННЫЙ) === */
-#cyber-bg{
-position:fixed;
-inset:0;
-z-index:0;
-pointer-events:none;
-overflow:hidden;
+@keyframes cyberDrift {
+    0% { transform: translate(0,0) rotate(0deg); }
+    100% { transform: translate(-50px, -50px) rotate(5deg); }
 }
 
-#cyber-bg::before{
-content:"";
-position:absolute;
-width:400%;
-height:400%;
-top:-150%;
-left:-150%;
+.app{height:100vh;display:flex;flex-direction:column;position:relative;z-index:1;background:#05050a}
 
-background:repeating-linear-gradient(
--45deg,
-rgba(0,255,150,0.35) 0px,
-rgba(0,255,150,0.35) 4px,
-rgba(0,150,255,0.35) 4px,
-rgba(0,150,255,0.35) 8px,
-transparent 8px,
-transparent 140px
-);
+header{width:100%;display:flex;justify-content:space-between;align-items:center;height:34px;flex-shrink:0;padding:0 14px;border-bottom:1px solid rgba(255,255,255,0.1);background:#05050a;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.brand-line{display:flex;align-items:center;gap:5px}
+.eco-icon{width:14px;height:14px;color:var(--green);filter:drop-shadow(0 0 6px rgba(0,224,112,0.8))}
+.brand-text{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--green);text-shadow:0 0 10px rgba(0,224,112,0.5)}
+.prod-text{font-size:7px;color:var(--text-dim);letter-spacing:1px}
 
-animation:moveBg 18s linear infinite, neonShift 5s ease-in-out infinite;
+.main-row{flex:1;display:flex;min-height:0;overflow:hidden}
+
+.prize-panel{width:var(--panel-w);flex-shrink:0;background:rgba(17,17,24,0.95);border-right:1px solid rgba(255,255,255,0.1);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:3px;box-shadow:inset -5px 0 20px rgba(0,0,0,0.5)}
+.prize-panel-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:8px;text-align:center;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.prize-row{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);border-left:2.5px solid var(--rc);transition:all 0.2s;border:1px solid rgba(255,255,255,0.05)}
+.prize-row:hover{background:rgba(255,255,255,0.08);box-shadow:0 0 10px rgba(0,0,0,0.3)}
+.prize-row-icon{width:22px;height:22px;color:var(--rc);flex-shrink:0}
+.prize-row-name{font-size:10px;font-weight:600;color:#fff;line-height:1.2}
+.prize-row-sub{font-size:7px;color:var(--text-dim);margin-top:1px}
+
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:12px;gap:14px;overflow:hidden;position:relative}
+
+.case-wrap{display:flex;flex-direction:column;align-items:center;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;overflow:hidden;max-height:200px}
+.case-wrap.hidden{opacity:0;transform:scale(0.9);max-height:0;margin:0;padding:0;pointer-events:none}
+.case-box{width:170px;height:130px;background:linear-gradient(160deg,#2a2a3a,#14141c);opacity:1;border-radius:12px;border:1px solid rgba(0,224,112,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(0,0,0,0.8),0 0 15px rgba(0,224,112,0.1),inset 0 1px 0 rgba(255,255,255,0.1);position:relative}
+.case-box.vibrating{animation:vib 0.35s ease-in-out}
+@keyframes vib{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
+.case-brand{display:flex;flex-direction:column;align-items:center;gap:4px}
+.case-leaf{width:24px;height:24px;color:var(--green);filter:drop-shadow(0 0 8px rgba(0,224,112,0.8))}
+.case-label{font-size:11px;font-weight:800;letter-spacing:3px;color:var(--green);text-shadow:0 0 10px rgba(0,224,112,0.6)}
+.case-glow{position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(0,224,112,0.15),transparent 70%);border-radius:50%;z-index:-1;animation:gpulse 3s infinite}
+@keyframes gpulse{0%,100%{opacity:0.5;transform:scale(0.9)}50%{opacity:1;transform:scale(1.1)}}
+
+.roulette-wrap{width:100%;max-width:100%;height:160px;background:rgba(17,17,24,0.95);border-radius:14px;border:1px solid rgba(255,255,255,0.1);overflow:hidden;opacity:0;transform:scale(0.97);pointer-events:none;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;max-height:0;margin:0;box-shadow:0 0 30px rgba(0,0,0,0.6),inset 0 0 20px rgba(0,0,0,0.5)}
+.roulette-wrap.active{opacity:1;transform:scale(1);pointer-events:auto;max-height:200px;margin:0}
+.roulette-viewport{width:100%;height:100%;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.roulette-strip{display:flex;height:100%;will-change:transform}
+.pointer{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;width:2px;height:100%;background:linear-gradient(180deg,var(--gold),transparent)}
+.pointer::before{content:'▼';position:absolute;top:-3px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:14px;filter:drop-shadow(0 0 6px var(--gold))}
+
+.card{flex-shrink:0;width:140px;height:100%;background:#1a1a24;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;position:relative;transition:background 0.3s}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--rc);box-shadow:0 0 10px var(--rc)}
+.card-icon{width:44px;height:44px;margin-bottom:6px;color:var(--rc)}
+.card-name{font-size:10px;font-weight:700;text-transform:uppercase;color:#fff;text-align:center;line-height:1.15}
+.card-rarity{font-size:7px;font-weight:700;text-transform:uppercase;color:var(--rc);opacity:0.8;margin-top:3px}
+.card.legendary{background:linear-gradient(180deg,#1e1a08,var(--surface-2));box-shadow:0 0 20px rgba(255,215,0,0.1)}
+.card.legendary .card-icon{filter:drop-shadow(0 0 8px rgba(255,215,0,0.8))}
+.card.dayx-card{background:linear-gradient(180deg,#1a1408,var(--surface-2));animation:dayxPulse 2s infinite}
+@keyframes dayxPulse{0%,100%{box-shadow:inset 0 0 15px rgba(249,115,22,0.1)}50%{box-shadow:inset 0 0 25px rgba(249,115,22,0.25)}}
+
+.result-area{width:100%;max-width:420px;min-height:0;max-height:0;overflow:hidden;opacity:0;transition:max-height 0.4s,opacity 0.4s,margin 0.4s;margin:0;position:relative}
+.result-area.active{max-height:120px;opacity:1;margin-top:4px}
+.result-area.active::before {content:'';position:absolute;inset:-60%;z-index:-1;pointer-events:none;background:radial-gradient(circle,var(--rc) 0%,transparent 60%);opacity:0.2;filter:blur(30px);animation:winBurst 1.2s ease-out forwards}
+@keyframes winBurst {0%{transform:scale(0.5);opacity:0.5}100%{transform:scale(1.8);opacity:0}}
+
+.result-card{background:var(--surface);border-radius:12px;padding:12px 20px;text-align:center;border:1px solid rgba(255,255,255,0.15);box-shadow:0 8px 30px rgba(0,0,0,0.6),0 0 15px rgba(var(--rc-rgb,0,0,0),0.3);position:relative;overflow:hidden;width:100%}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--rc);box-shadow:0 0 15px var(--rc)}
+.res-icon{width:32px;height:32px;margin:0 auto 5px;color:var(--rc)}
+.res-name{font-size:16px;font-weight:800;text-transform:uppercase;margin-bottom:3px;text-shadow:0 0 10px rgba(255,255,255,0.3)}
+.res-badge{font-size:8px;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,0.3);border:1px solid var(--rc);color:var(--rc);box-shadow:0 0 8px var(--rc)}
+.res-hint{font-size:9px;color:var(--text-dim);margin-top:5px;letter-spacing:1px}
+
+.wheel-wrap{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;transform:scale(0.9);pointer-events:none;transition:opacity 0.4s,transform 0.4s,max-height 0.4s,margin 0.4s;max-height:0;margin:0;overflow:hidden;background:rgba(17,17,24,0.95)}
+.wheel-wrap.active{opacity:1;transform:scale(1);pointer-events:auto;max-height:500px;margin:0}
+.wheel-title{font-size:18px;font-weight:800;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,0.6);letter-spacing:1px}
+.wheel-container{position:relative;width:320px;height:320px;flex-shrink:0;background:#000000;border-radius:50%;box-shadow:0 0 40px rgba(0,0,0,0.8),inset 0 0 30px rgba(0,0,0,0.6),0 0 20px rgba(0,224,112,0.1);border:1px solid rgba(255,255,255,0.15)}
+.wheel-svg{width:100%;height:100%;transition:transform 9s cubic-bezier(0.12,0.88,0.25,1);border-radius:50%;box-shadow:inset 0 0 25px rgba(0,0,0,0.7)}
+.wheel-pointer-top{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:22px solid var(--gold);filter:drop-shadow(0 4px 8px rgba(255,215,0,0.8));background:none!important;color:transparent!important;font-size:0!important;line-height:0!important;position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:5}
+.wheel-pointer-top::after{content:'';position:absolute;top:-26px;left:-14px;width:28px;height:4px;background:var(--gold);border-radius:2px;box-shadow:0 0 12px var(--gold)}
+.wheel-result{font-size:14px;font-weight:600;color:var(--text-dim);text-align:center;min-height:20px;transition:all 0.3s}
+.wheel-result.win{color:var(--green);text-shadow:0 0 12px rgba(0,224,112,0.6);animation:textGlow 1.5s infinite}
+@keyframes textGlow {0%,100%{text-shadow:0 0 8px rgba(0,224,112,0.4)}50%{text-shadow:0 0 20px rgba(0,224,112,0.9)}}
+.wheel-hint{font-size:10px;color:var(--text-dim);letter-spacing:1px}
+
+.history{width:100%;max-height:36px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;flex-shrink:0;padding:0 14px}
+.h-item{display:flex;align-items:center;gap:5px;padding:4px 7px;background:var(--surface);border-radius:5px;border-left:2px solid var(--rc);font-size:9px;border:1px solid rgba(255,255,255,0.05)}
+.h-icon{width:12px;height:12px;color:var(--rc);flex-shrink:0}
+.h-name{flex:1;font-weight:600}
+.h-time{color:var(--text-dim);font-size:7px}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(2,2,5,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal{background:#0b0b12;padding:18px;border-radius:14px;width:90%;max-width:250px;border:1px solid rgba(255,255,255,0.15);text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.8)}
+.modal h3{font-size:13px;margin-bottom:4px}
+.modal p{color:var(--text-dim);font-size:10px;margin-bottom:8px}
+.pin-in{width:100%;padding:9px;font-size:16px;text-align:center;letter-spacing:5px;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#fff;margin:8px 0;outline:none;transition:border-color 0.2s}
+.pin-in:focus{border-color:var(--gold);box-shadow:0 0 15px rgba(255,215,0,0.3)}
+.m-btns{display:flex;gap:6px;margin-top:8px}
+.m-btn{flex:1;padding:7px;border:none;border-radius:7px;font-size:10px;font-weight:600;cursor:pointer;transition:transform 0.1s}
+.m-btn:active{transform:scale(0.96)}
+.m-cancel{background:rgba(255,255,255,0.05);color:var(--text-dim)}
+.m-confirm{background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff}
+.err{color:var(--red);font-size:9px;margin-top:5px;display:none}
+.err.show{display:block}
+
+.admin-panel{position:fixed;top:0;right:0;width:100%;max-width:300px;height:100vh;background:#0b0b12;border-left:1px solid rgba(255,255,255,0.1);z-index:1001;transform:translateX(100%);transition:transform 0.3s;overflow-y:auto;box-shadow:-10px 0 40px rgba(0,0,0,0.8)}
+.admin-panel.open{transform:translateX(0)}
+.adm-head{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.adm-close{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer}
+.adm-content{padding:12px}
+.adm-row{display:flex;align-items:center;gap:7px;padding:6px;background:rgba(255,255,255,0.03);border-radius:5px;margin-bottom:4px;border-left:2px solid var(--rc)}
+.adm-row input{width:40px;padding:2px;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:3px;color:#fff;text-align:center;font-size:10px}
+.adm-label{font-size:8px;color:var(--text-dim)}
+
+.confetti-piece{position:fixed;border-radius:2px;animation:cfall linear forwards;pointer-events:none;z-index:9999}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}
+
+@media(max-width:700px){:root{--panel-w:140px}.prize-row{padding:5px 6px}.prize-row-name{font-size:9px}.prize-row-icon{width:18px;height:18px}.card{width:110px}.card-icon{width:36px;height:36px}.roulette-wrap{height:140px}.wheel-container{width:260px;height:260px}}
+@media(max-width:500px){:root{--panel-w:110px}.prize-row-name{font-size:8px}.prize-row-sub{display:none}.card{width:90px}.card-icon{width:28px;height:28px}.roulette-wrap{height:120px}.wheel-container{width:220px;height:220px}.case-box{width:150px;height:110px}.case-label{font-size:10px}.case-leaf{width:20px;height:20px}}
+
+/* === 🌌 INFINITE NEON CYBERPUNK BACKGROUND LAYER === */
+#cyber-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: transparent;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-@keyframes moveBg{
-0%{transform:translate(0,0)}
-100%{transform:translate(400px,400px)}
+#cyber-bg::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0,255,150,0.25) 0px,
+    rgba(0,255,150,0.25) 2px,
+    rgba(0,150,255,0.25) 2px,
+    rgba(0,150,255,0.25) 4px,
+    transparent 4px,
+    transparent 90px
+  );
+  animation: moveBg 25s linear infinite, neonShift 6s ease-in-out infinite;
 }
 
-@keyframes neonShift{
-0%{filter:hue-rotate(0deg) blur(1px) drop-shadow(0 0 10px #00ff99)}
-50%{filter:hue-rotate(140deg) blur(2px) drop-shadow(0 0 20px #0096ff)}
-100%{filter:hue-rotate(0deg) blur(1px) drop-shadow(0 0 10px #00ff99)}
+#cyber-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(0,255,150,0.12), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(0,150,255,0.12), transparent 40%);
+  filter: blur(40px);
+  opacity: 0.6;
 }
 
-/* === APP === */
-.app{
-position:relative;
-z-index:1;
-height:100vh;
-display:flex;
-flex-direction:column;
+@keyframes moveBg {
+  from { transform: translateY(0); }
+  to { transform: translateY(200px); }
 }
 
-/* === HEADER === */
-header{
-height:40px;
-display:flex;
-align-items:center;
-padding:0 15px;
-background:#111118;
-border-bottom:1px solid #222;
+@keyframes neonShift {
+  0% {
+    filter: hue-rotate(0deg) blur(1px) drop-shadow(0 0 6px rgba(0,255,150,0.6));
+  }
+  50% {
+    filter: hue-rotate(90deg) blur(1.5px) drop-shadow(0 0 12px rgba(0,150,255,0.8));
+  }
+  100% {
+    filter: hue-rotate(0deg) blur(1px) drop-shadow(0 0 6px rgba(0,255,150,0.6));
+  }
 }
 
-/* === MAIN === */
-.stage{
-flex:1;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-gap:20px;
+/* ================= FORCE UI SOLID (убрать прозрачность) ================= */
+
+.roulette-wrap {
+  background: #111118 !important;
+  backdrop-filter: none !important;
 }
 
-/* === КЕЙС === */
-.case-box{
-width:180px;
-height:130px;
-background:#111118;
-border-radius:12px;
-display:flex;
-align-items:center;
-justify-content:center;
-border:1px solid #222;
+.case-box {
+  background: linear-gradient(160deg, #2a2a3a, #14141c) !important;
+  opacity: 1 !important;
 }
 
-/* === РУЛЕТКА === */
-.roulette-wrap{
-width:90%;
-height:160px;
-background:#111118;
-border-radius:12px;
-overflow:hidden;
-border:1px solid #222;
+.wheel-wrap {
+  background: #111118 !important;
+  backdrop-filter: none !important;
 }
 
-.roulette-viewport{
-width:100%;
-height:100%;
-overflow:hidden;
-background:#111118;
+.prize-panel {
+  background: #111118 !important;
+  backdrop-filter: none !important;
 }
 
-.roulette-strip{
-display:flex;
-height:100%;
+.card {
+  background: #1a1a24 !important;
 }
 
-.card{
-width:140px;
-height:100%;
-background:#1a1a24;
-display:flex;
-align-items:center;
-justify-content:center;
-border-right:1px solid #222;
+/* ================= FIX CYBER LINES (убрать разрывы) ================= */
+
+#cyber-bg::before {
+  width: 400% !important;
+  height: 400% !important;
+  top: -150% !important;
+  left: -150% !important;
+
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0,255,150,0.35) 0px,
+    rgba(0,255,150,0.35) 4px,
+    rgba(0,150,255,0.35) 4px,
+    rgba(0,150,255,0.35) 8px,
+    transparent 8px,
+    transparent 140px
+  ) !important;
+
+  animation: moveBg 18s linear infinite, neonShift 5s ease-in-out infinite !important;
 }
 
-/* === КОЛЕСО === */
-.wheel-wrap{
-background:#111118;
-padding:10px;
-border-radius:12px;
-border:1px solid #222;
+/* движение без разрывов */
+@keyframes moveBg {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(400px, 400px);
+  }
 }
 
-.wheel-container{
-width:300px;
-height:300px;
-background:#0f0f16;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-/* === КНОПКА === */
-button{
-padding:10px 20px;
-background:#00e070;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-}
-
-/* === УБИРАЕМ ВСЮ ПРОЗРАЧНОСТЬ === */
-.roulette-wrap,
-.wheel-wrap,
-.case-box,
-.card,
-.wheel-container{
-background-color:#111118 !important;
-opacity:1 !important;
-backdrop-filter:none !important;
+/* неоновый перелив */
+@keyframes neonShift {
+  0% {
+    filter: hue-rotate(0deg) blur(1px) drop-shadow(0 0 10px rgba(0,255,150,0.8));
+  }
+  50% {
+    filter: hue-rotate(140deg) blur(2px) drop-shadow(0 0 20px rgba(0,150,255,1));
+  }
+  100% {
+    filter: hue-rotate(0deg) blur(1px) drop-shadow(0 0 10px rgba(0,255,150,0.8));
+  }
 }
 
 </style>
 </head>
-
 <body>
-
 <div id="cyber-bg"></div>
-
 <div class="app">
-
-<header>АЗС ЭКО</header>
-
+<header><div class="brand-line"><svg class="eco-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg><div><div class="brand-text">АЗС ЭКО</div><div class="prod-text">prod by qqqq</div></div></div></header>
+<div class="main-row">
+<div class="prize-panel" id="prizePanel"></div>
 <div class="stage">
+<div class="case-wrap" id="caseWrap"><div class="case-glow"></div><div class="case-box" id="caseBox"><div class="case-brand"><svg class="case-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg><div class="case-label">АЗС ЭКО</div></div></div></div>
+<div class="roulette-wrap" id="rouletteWrap"><div class="pointer"></div><div class="roulette-viewport"><div class="roulette-strip" id="strip"></div></div></div>
+<div class="result-area" id="resArea"><div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div></div>
+<div class="wheel-wrap" id="wheelWrap"><div class="wheel-title">🎯 День X</div><div class="wheel-container"><div class="wheel-pointer-top">▼</div><svg class="wheel-svg" id="wheelSvg" viewBox="0 0 300 300"></svg></div><div class="wheel-result" id="wheelRes">Нажмите Enter</div><div class="wheel-hint">Enter — крутить</div></div>
+</div></div>
+<div class="history" id="histList"></div>
+</div>
+<div class="modal-overlay" id="pinModal"><div class="modal"><h3>🔐 Admin Access</h3><p>Введите PIN для доступа</p><input type="password" class="pin-in" id="pinIn" maxlength="4" placeholder="••••" inputmode="numeric"><div class="m-btns"><button class="m-btn m-cancel" id="btnPinCancel">Отмена</button><button class="m-btn m-confirm" id="btnPinConfirm">Войти</button></div><div class="err" id="pinErr">Неверный PIN</div></div></div>
+<div class="admin-panel" id="admPanel"><div class="adm-head"><h3>⚙️ Admin Panel</h3><button class="adm-close" id="admClose">✕</button></div><div class="adm-content" id="admContent"></div></div>
+<script>
+/* === STABLE ENGINE (UNTOUCHED LOGIC) === */
+const R = { common:{n:'Common',c:'#6b7280'}, uncommon:{n:'Uncommon',c:'#06b6d4'}, rare:{n:'Rare',c:'#3b82f6'}, epic:{n:'Epic',c:'#a855f7'}, legendary:{n:'Legendary',c:'#ffd700'}, dayx:{n:'Событие',c:'#f97316'} };
+const I = {
+  sweet:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 38V56"/><path d="M20 38C20 26 26 22 32 22C38 22 44 26 44 38"/><circle cx="32" cy="22" r="10"/><path d="M24 18L28 22"/><path d="M40 18L36 22"/></svg>`,
+  wipes:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="12" y="14" width="40" height="36" rx="4"/><path d="M12 26H52"/><path d="M32 26V50"/><path d="M20 14V10C20 6 24 2 32 2C40 2 44 6 44 10V14"/></svg>`,
+  coffee:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 20H44V44C44 50 40 54 34 54H26C20 54 16 50 16 44V20Z"/><path d="M44 28H48C52 28 54 32 54 36C54 40 52 44 48 44H44"/><path d="M24 12V16"/><path d="M32 12V16"/><path d="M40 12V16"/></svg>`,
+  fuel1:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">1L</text></svg>`,
+  fuel2:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">2L</text></svg>`,
+  fuel3:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 22H46V54H14V22Z"/><path d="M14 22L18 8H42L46 22"/><path d="M46 34H54V42H50"/><text x="30" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none">3L</text></svg>`,
+  cash:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="14" width="48" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M24 32H40"/><path d="M32 24V40"/></svg>`,
+  cash5:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="14" width="52" height="36" rx="4"/><circle cx="32" cy="32" r="10"/><path d="M22 32H42"/><path d="M32 22V42"/></svg>`,
+  dayx:`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="26"/><path d="M32 16V32L42 38"/></svg>`
+};
+const DEFAULTS = [
+  {id:1, n:'Сладкий Бонус',  i:'sweet',  r:'common',    ch:15},
+  {id:2, n:'Салфетки',       i:'wipes',  r:'common',    ch:9},
+  {id:3, n:'Кофе Американо', i:'coffee', r:'uncommon',  ch:8},
+  {id:4, n:'100 ₽',          i:'cash',   r:'rare',      ch:7.8},
+  {id:5, n:'1л Бензина',     i:'fuel1',  r:'rare',      ch:4},
+  {id:6, n:'2л Бензина',     i:'fuel2',  r:'epic',      ch:-1},
+  {id:7, n:'3000 ₽',         i:'cash',   r:'legendary', ch:0},
+  {id:8, n:'5000 ₽',         i:'cash5',  r:'legendary', ch:0},
+  {id:9, n:'День X',         i:'dayx',   r:'dayx',      ch:51}
+];
 
-<div class="case-box">
-КЕЙС
-</div>
+let gameState = {
+  prizes: JSON.parse(JSON.stringify(DEFAULTS)),
+  hist: [],
+  opens: 0,
+  phase: 'idle',
+  wheelSpinning: false,
+  adminOpen: false,
+  timeouts: []
+};
 
-<div class="roulette-wrap">
-<div class="roulette-viewport">
-<div class="roulette-strip">
-<div class="card">1</div>
-<div class="card">2</div>
-<div class="card">3</div>
-<div class="card">4</div>
-</div>
-</div>
-</div>
+const CW = 140, VIS = 65, WIN = 56, SPIN_MS = 9000;
 
-<div class="wheel-wrap">
-<div class="wheel-container">
-🎯
-</div>
-</div>
+function safeTimeout(fn, ms) {
+  const id = setTimeout(fn, ms);
+  gameState.timeouts.push(id);
+  return id;
+}
 
-<button onclick="alert('спин')">Крутить</button>
+function clearAllTimers() {
+  gameState.timeouts.forEach(clearTimeout);
+  gameState.timeouts = [];
+}
 
-</div>
-</div>
+function sleep(ms) { return new Promise(resolve => safeTimeout(resolve, ms)); }
 
+function resetGame() {
+  clearAllTimers();
+  gameState.phase = 'idle';
+  gameState.wheelSpinning = false;
+  gameState.adminOpen = false;
+  document.getElementById('pinModal').classList.remove('active');
+  document.getElementById('admPanel').classList.remove('open');
+  document.getElementById('resArea').classList.remove('active');
+  document.getElementById('rouletteWrap').classList.remove('active');
+  document.getElementById('wheelWrap').classList.remove('active');
+  document.getElementById('caseWrap').classList.remove('hidden');
+  document.getElementById('caseBox').classList.remove('vibrating');
+  const pinIn = document.getElementById('pinIn');
+  if(pinIn) pinIn.value = '';
+  document.getElementById('pinErr').classList.remove('show');
+  const resArea = document.getElementById('resArea');
+  resArea.innerHTML = `<div class="result-card" id="resCard"><div class="res-icon" id="resIcon"></div><div class="res-name" id="resName"></div><div class="res-badge" id="resBadge"></div><div class="res-hint">Нажмите Enter чтобы продолжить</div></div>`;
+}
+
+function init() {
+  buildWheel();
+  renderPrizePanel();
+  renderHist();
+  setupKeyboard();
+  setupDevUI();
+}
+
+function renderPrizePanel() {
+  const el = document.getElementById('prizePanel');
+  let h = '<div class="prize-panel-title">Лоты кейса</div>';
+  gameState.prizes.forEach(p => { 
+    const c = R[p.r].c; 
+    h += `<div class="prize-row" style="--rc:${c}"><div class="prize-row-icon">${I[p.i]}</div><div><div class="prize-row-name">${p.n}</div><div class="prize-row-sub">${R[p.r].n}</div></div></div>`; 
+  });
+  el.innerHTML = h;
+}
+
+function getWinner() {
+  const pool = gameState.prizes.filter(p => p.ch > 0);
+  const total = pool.reduce((s, p) => s + p.ch, 0);
+  let r = Math.random() * total;
+  for (const p of pool) { r -= p.ch; if (r <= 0) return p; }
+  return pool[pool.length - 1];
+}
+
+function setupKeyboard() {
+  document.removeEventListener('keydown', handleGlobalKey);
+  document.addEventListener('keydown', handleGlobalKey);
+}
+
+function handleGlobalKey(e) {
+  const key = e.key.toLowerCase();
+  if (key === 'f') { e.preventDefault(); openDevModal(); return; }
+  if (key === 'enter') {
+    if (document.activeElement?.tagName === 'INPUT') return;
+    if (gameState.adminOpen) return;
+    e.preventDefault();
+    try {
+      switch (gameState.phase) {
+        case 'idle': startSpin(); break;
+        case 'showing_result': closeResult(); break;
+        case 'wheel_active': if (!gameState.wheelSpinning) { gameState.wheelSpinning = true; spinWheel(); } break;
+        case 'showing_wheel_result': closeWheelResult(); break;
+      }
+    } catch (err) { console.error("Action error:", err); resetGame(); }
+  }
+}
+
+async function startSpin() {
+  if (gameState.phase !== 'idle') return;
+  try {
+    gameState.phase = 'spinning';
+    document.getElementById('caseWrap').classList.remove('hidden');
+    document.getElementById('rouletteWrap').classList.remove('active');
+    document.getElementById('wheelWrap').classList.remove('active');
+    document.getElementById('resArea').classList.remove('active');
+    const strip = document.getElementById('strip');
+    strip.style.transition = 'none'; strip.style.transform = 'translateX(0)'; strip.innerHTML = '';
+    const wSvg = document.getElementById('wheelSvg');
+    wSvg.style.transition = 'none'; wSvg.style.transform = 'rotate(0deg)';
+    document.getElementById('wheelRes').textContent = 'Нажмите Enter'; document.getElementById('wheelRes').className = 'wheel-result';
+    await sleep(200);
+    document.getElementById('caseBox').classList.add('vibrating');
+    await sleep(350);
+    document.getElementById('caseBox').classList.remove('vibrating');
+    document.getElementById('caseWrap').classList.add('hidden');
+    document.getElementById('rouletteWrap').classList.add('active');
+    await sleep(400);
+    const win = getWinner();
+    buildStrip(win);
+    await spinRoulette();
+    await sleep(300);
+    if (win.n === 'День X') {
+      document.getElementById('rouletteWrap').classList.remove('active');
+      await sleep(300);
+      await runDayX();
+    } else {
+      showResult(win); addHist(win); gameState.phase = 'showing_result';
+    }
+  } catch (err) { console.error("Spin Error:", err); resetGame(); }
+}
+
+function buildStrip(win) {
+  const strip = document.getElementById('strip');
+  let h = '';
+  for (let i = 0; i < VIS; i++) {
+    const p = (i === WIN) ? win : gameState.prizes[Math.floor(Math.random() * gameState.prizes.length)];
+    const c = R[p.r].c, leg = p.r === 'legendary' ? ' legendary' : '', dx = p.r === 'dayx' ? ' dayx-card' : '';
+    h += `<div class="card${leg}${dx}" style="--rc:${c}"><div class="card-icon">${I[p.i]}</div><div class="card-name">${p.n}</div><div class="card-rarity">${R[p.r].n}</div></div>`;
+  }
+  strip.innerHTML = h;
+}
+
+function spinRoulette() {
+  return new Promise(res => {
+    const strip = document.getElementById('strip'), vp = document.querySelector('.roulette-viewport');
+    strip.style.transition = 'none'; strip.style.transform = 'translateX(0)'; void strip.offsetWidth;
+    const t = -((WIN * CW) + (CW / 2) - (vp.clientWidth / 2) + ((Math.random() * 40) - 20));
+    requestAnimationFrame(() => {
+      strip.style.transition = `transform ${SPIN_MS}ms cubic-bezier(0.2, 0.8, 0.15, 1)`;
+      strip.style.transform = `translateX(${t}px)`;
+    });
+    let done = false;
+    const fin = () => { if (done) return; done = true; strip.removeEventListener('transitionend', onE); res(); };
+    const onE = e => { if (e.propertyName === 'transform') fin(); };
+    safeTimeout(fin, SPIN_MS + 500);
+    strip.addEventListener('transitionend', onE);
+  });
+}
+
+function showResult(p) {
+  if (gameState.adminOpen) return;
+  const c = R[p.r].c;
+  const iconEl = document.getElementById('resIcon');
+  const nameEl = document.getElementById('resName');
+  const badgeEl = document.getElementById('resBadge');
+  if (iconEl) iconEl.innerHTML = I[p.i];
+  if (iconEl) iconEl.style.color = c;
+  const cardEl = document.getElementById('resCard');
+  if(cardEl) cardEl.style.setProperty('--rc', c);
+  if (nameEl) nameEl.textContent = p.n;
+  if (badgeEl) { badgeEl.textContent = R[p.r].n; badgeEl.style.color = c; badgeEl.style.borderColor = c; }
+  document.getElementById('resArea').classList.add('active');
+  if (p.r === 'legendary') spawnConfetti();
+}
+
+function closeResult() {
+  if (gameState.adminOpen) return;
+  document.getElementById('resArea').classList.remove('active');
+  document.getElementById('rouletteWrap').classList.remove('active');
+  const strip = document.getElementById('strip'); strip.style.transition = 'none'; strip.style.transform = 'translateX(0)'; strip.innerHTML = '';
+  document.getElementById('caseWrap').classList.remove('hidden'); gameState.phase = 'idle';
+}
+
+function buildWheel() {
+  const svg = document.getElementById('wheelSvg');
+  if (!svg) return;
+  const cx = 150, cy = 150, r = 130, n = 31, sa = 360 / n;
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const a1 = (i * sa - 90) * Math.PI / 180, a2 = ((i + 1) * sa - 90) * Math.PI / 180;
+    h += `<path d="M${cx},${cy} L${cx+r*Math.cos(a1)},${cy+r*Math.sin(a1)} A${r},${r} 0 0,1 ${cx+r*Math.cos(a2)},${cy+r*Math.sin(a2)} Z" fill="${i%2?'#1a1a28':'#222235'}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
+    const ma = ((i + 0.5) * sa - 90) * Math.PI / 180, nr = r * 0.78;
+    h += `<text x="${cx+nr*Math.cos(ma)}" y="${cy+nr*Math.sin(ma)}" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(${(i+0.5)*sa},${cx+nr*Math.cos(ma)},${cy+nr*Math.sin(ma)})">${i+1}</text>`;
+  }
+  h += `<circle cx="${cx}" cy="${cy}" r="24" fill="#111118" stroke="#ffd700" stroke-width="2"/><text x="${cx}" y="${cy}" fill="#ffd700" font-size="16" text-anchor="middle" dominant-baseline="central">🎯</text>`;
+  svg.innerHTML = h;
+}
+
+async function runDayX() {
+  if (gameState.adminOpen) return;
+  gameState.phase = 'wheel_active'; gameState.wheelSpinning = false;
+  document.getElementById('wheelWrap').classList.add('active');
+  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; document.getElementById('wheelRes').className = 'wheel-result';
+}
+
+async function spinWheel() {
+  if (gameState.adminOpen) return;
+  const svg = document.getElementById('wheelSvg'), resEl = document.getElementById('wheelRes');
+  resEl.textContent = 'Крутим...'; resEl.className = 'wheel-result';
+  const num = Math.floor(Math.random() * 31) + 1, today = new Date().getDate();
+  const sa = 360 / 31, target = -((num - 0.5) * sa), spins = 6 + Math.floor(Math.random() * 3);
+  const deg = spins * 360 + target + ((Math.random() - 0.5) * (sa * 0.4));
+  svg.style.transition = 'transform 9s cubic-bezier(0.2, 0.8, 0.15, 1)'; svg.style.transform = `rotate(${deg}deg)`;
+  await sleep(9300);
+  resEl.textContent = `Выпало: ${num}`;
+  if (num === today) {
+    resEl.textContent = `🎉 ДЕНЬ X! ${num} → Бонус 3л бензина!`; resEl.className = 'wheel-result win';
+    spawnConfetti(); addHist({ n: '3л Бензина (День X)', i: 'fuel3', r: 'legendary' });
+  } else { resEl.textContent = `Число ${num}. Сегодня ${today}. Не совпало.`; }
+  gameState.phase = 'showing_wheel_result';
+}
+
+function closeWheelResult() {
+  if (gameState.adminOpen) return;
+  document.getElementById('wheelWrap').classList.remove('active');
+  const svg = document.getElementById('wheelSvg'); svg.style.transition = 'none'; svg.style.transform = 'rotate(0deg)';
+  document.getElementById('wheelRes').textContent = 'Нажмите Enter'; document.getElementById('wheelRes').className = 'wheel-result';
+  document.getElementById('rouletteWrap').classList.remove('active');
+  const strip = document.getElementById('strip'); strip.style.transition = 'none'; strip.style.transform = 'translateX(0)'; strip.innerHTML = '';
+  document.getElementById('caseWrap').classList.remove('hidden'); gameState.phase = 'idle';
+}
+
+function addHist(p) {
+  if (gameState.adminOpen) return;
+  gameState.opens++; gameState.hist.unshift({ n: p.n, i: p.i, r: p.r, t: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }) });
+  if (gameState.hist.length > 6) gameState.hist.pop(); renderHist();
+}
+
+function renderHist() {
+  document.getElementById('histList').innerHTML = gameState.hist.map(h => {
+    const c = R[h.r].c; return `<div class="h-item" style="--rc:${c}"><div class="h-icon">${I[h.i]}</div><div class="h-name">${h.n}</div><div class="h-time">${h.t}</div></div>`;
+  }).join('');
+}
+
+function spawnConfetti() {
+  const cols = ['#ffd700','#ff4500','#fff','#00e070','#a855f7','#3b82f6'];
+  for (let i = 0; i < 18; i++) {
+    const c = document.createElement('div'); c.className = 'confetti-piece';
+    c.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${cols[i%6]};animation-duration:${1.5+Math.random()}s;width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;`;
+    document.body.appendChild(c); safeTimeout(() => c.remove(), 3000);
+  }
+}
+
+function openDevModal() {
+  gameState.adminOpen = true; clearAllTimers();
+  gameState.phase = 'idle'; gameState.wheelSpinning = false;
+  document.getElementById('pinModal').classList.add('active');
+  const inp = document.getElementById('pinIn');
+  if(inp) { inp.value = ''; document.getElementById('pinErr').classList.remove('show'); setTimeout(() => inp.focus(), 50); }
+}
+
+function setupDevUI() {
+  const btnCancel = document.getElementById('btnPinCancel');
+  const btnConfirm = document.getElementById('btnPinConfirm');
+  const btnAdmClose = document.getElementById('admClose');
+  if (btnCancel) btnCancel.onclick = () => { gameState.adminOpen = false; document.getElementById('pinModal').classList.remove('active'); resetGame(); };
+  if (btnConfirm) btnConfirm.onclick = () => {
+    const inp = document.getElementById('pinIn');
+    if (inp && inp.value === '2468') { gameState.adminOpen = true; document.getElementById('pinModal').classList.remove('active'); renderAdm(); document.getElementById('admPanel').classList.add('open'); }
+    else { document.getElementById('pinErr').classList.add('show'); if(inp) inp.value = ''; }
+  };
+  const pinIn = document.getElementById('pinIn');
+  if(pinIn) pinIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); btnConfirm.click(); } });
+  if (btnAdmClose) btnAdmClose.onclick = () => { gameState.adminOpen = false; document.getElementById('admPanel').classList.remove('open'); resetGame(); };
+}
+
+function renderAdm() {
+  const wt = gameState.prizes.filter(p => p.ch > 0).reduce((s, p) => s + p.ch, 0);
+  let h = `<div style="margin-bottom:8px;font-size:9px;color:var(--text-dim);">
+    <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Открытий:</span><span style="color:var(--gold)">${gameState.opens}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span>Рабочий вес:</span><span style="color:var(--green)">${wt}</span></div></div>`;
+  h += gameState.prizes.map((p, i) => {
+    const c = R[p.r].c, pct = p.ch > 0 ? ((p.ch / wt) * 100).toFixed(1) : '0';
+    const st = p.ch === 0 ? '(визуал)' : p.ch < 0 ? '(✕)' : `${pct}%`;
+    return `<div class="adm-row" style="--rc:${c}"><div style="width:14px;height:14px;color:${c}">${I[p.i]}</div><div style="flex:1;"><div style="font-size:9px;font-weight:600;">${p.n}</div><div class="adm-label">Вес: ${p.ch} → ${st}</div></div><input type="number" value="${p.ch}" step="0.1" onchange="gameState.prizes[${i}].ch=parseFloat(this.value)||0;renderAdm()"></div>`;
+  }).join('');
+  document.getElementById('admContent').innerHTML = h;
+}
+
+init();
+</script>
 </body>
 </html>
+
